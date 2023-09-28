@@ -15,7 +15,7 @@ import os
 
 
 
-            
+
 class Files_RW():
     hashtags=['#comment','#setup','#data_header','#data_table']
               
@@ -27,7 +27,7 @@ class Files_RW():
         for item in itemlist:
             text=text+str(item)+sep
         return text[:-1]
-            
+
     def check_E60_ini(self,dirname,filename,split):
         out=self.container()
         with open(os.path.join(dirname,filename), 'r') as f:
@@ -43,12 +43,31 @@ class Files_RW():
                 if tmp[0]=='reference_file':
                     out.reffile=tmp[-1]
         return out
-        
+
+    def check_IV_measure_ini(self,dirname,filename,split):
+        out=self.container()
+        with open(os.path.join(dirname,filename), 'r') as f:
+            for line in f:
+                a=line.strip()
+                tmp=a.split(split)
+                if tmp[0]=='save_file_path':
+                    out.savedir=tmp[-1]
+        return out
+
+    def check_IV_measure_inst_file(self,dirname,filename,split):
+        ip_list=[]
+        with open(os.path.join(dirname,filename), 'r') as f:
+            for line in f:
+                a=line.strip()
+                tmp=a.split(split)
+                ip_list.append(tmp[-1])
+        return ip_list
+
     def write_to_file(self,dirname,filename,write):
         with open(os.path.join(dirname,filename),'w') as f:
             for line in write:
                 np.savetxt(f, [line], delimiter='\t', newline='\n', fmt='%s')
-    
+
     def write_header_data(self,dirname,filename,header,data,fmtlist):
         with open(os.path.join(dirname,filename),'w') as f:
             for line in header:
@@ -65,10 +84,10 @@ class Files_RW():
         out.data=[]
         out.data_units=''
         out.error=''
-        try: 
+        try:
             with open(filename,'r') as f:
                 for line in f:
-                    tmp=line.strip()                   
+                    tmp=line.strip()
                     if counter==10:#on  10 row you get info about measurement
                         setup_marker=0
                         if tmp.startswith('%'):
@@ -86,7 +105,7 @@ class Files_RW():
                     counter+=1
         except:
             out.error='File cannot be read!'
-        #to be furthered improved             
+        #to be furthered improved
         out.wlength=np.linspace(setup[1],setup[2],int(setup[4]))
         out.wlength_units=setup[0]
         out.data=np.array(out.data)
@@ -97,7 +116,7 @@ class Files_RW():
         elif out.type=='A':
             out.type='Absorbance'
         return out
-        
+
     def process_TMM_header(self,header,*args):
         if args:
             args=args
@@ -106,7 +125,7 @@ class Files_RW():
         error=''
         wlength_units=''
         data_units=''
-        
+
         idx=[header[0].index(arg) for arg in args]
         wlength_units=header[1][idx[0]]
         try:
@@ -114,12 +133,12 @@ class Files_RW():
         except:
             pass
         return idx,wlength_units,data_units,error
-            
+
     def process_2col_data(self,data,idx):
         col1=data[:,idx[0]]
         col2=data[:,idx[1]]
         return col1,col2
-            
+
     def load_reference_TMM(self,filename,*args,**kwargs):
         out=self.container()
         error=''
@@ -131,8 +150,8 @@ class Files_RW():
         out.type='Reflectance'
         out.error=error
         return out
-    
-    
+
+
     def process_dtsp_header(self, header):
         error=''
         wlength_units=''
@@ -145,8 +164,8 @@ class Files_RW():
         except:
             pass
         return idx,wlength_units,data_units,data_type,error
-    
-    
+
+
     def load_dtsp(self,filename,*args,**kwargs):
         out=self.container()
         error=''
@@ -156,15 +175,15 @@ class Files_RW():
         if not error:
             out.wlength,out.data=self.process_2col_data(data,idx)
         out.error=error
-        return out   
-    
+        return out
+
     def reset_markers(self,markers,mykey):
         for key in markers.keys():
             if key==mykey:
                 markers[key]=1;
             else:
                 markers[key]=0
-    
+
     def read_ihtm_file(self,filename,**kwargs):#this should be the same for all files you are creating either in measurements of after processing except for AFM files
         comment=[]
         setup=[]
@@ -179,7 +198,7 @@ class Files_RW():
             with open(filename, 'r') as f:
                 for line in f:
                     tmp=line.strip()
-                    
+
                     if tmp==Files_RW.hashtags[0]:
                         self.reset_markers(markers,tmp)
                         continue
