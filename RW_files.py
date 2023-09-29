@@ -13,13 +13,15 @@ import os
 #they are called from loading function that is saying all is okay and gives data back to main script
 
 
-class container():
-    pass
+
 
 
 class Files_RW():
     hashtags=['#comment','#setup','#data_header','#data_table']
-
+              
+    class container():
+        pass
+    
     #to have it here although not used
     def Add_items(self,text,itemlist,sep):
         for item in itemlist:
@@ -27,7 +29,7 @@ class Files_RW():
         return text[:-1]
 
     def check_E60_ini(self,dirname,filename,split):
-        out=container()
+        out=self.container()
         with open(os.path.join(dirname,filename), 'r') as f:
             for line in f:
                 a=line.strip()
@@ -42,8 +44,8 @@ class Files_RW():
                     out.reffile=tmp[-1]
         return out
 
-	def check_IV_measure_ini(self,dirname,filename,split):
-        out=container()
+    def check_IV_measure_ini(self,dirname,filename,split):
+        out=self.container()
         with open(os.path.join(dirname,filename), 'r') as f:
             for line in f:
                 a=line.strip()
@@ -74,7 +76,7 @@ class Files_RW():
                 np.savetxt(f, [line], delimiter='\t', newline='\n', fmt=fmtlist)
 
     def load_dsp(self,filename):
-        out=container()
+        out=self.container()
         setup_marker=0
         counter=1
         setup=[]
@@ -138,7 +140,7 @@ class Files_RW():
         return col1,col2
 
     def load_reference_TMM(self,filename,*args,**kwargs):
-        out=container()
+        out=self.container()
         error=''
         (comment,setup,header,data,error)=self.read_ihtm_file(filename,**kwargs)
         if not error:
@@ -165,7 +167,7 @@ class Files_RW():
 
 
     def load_dtsp(self,filename,*args,**kwargs):
-        out=container()
+        out=self.container()
         error=''
         (comment,setup,header,data,error)=self.read_ihtm_file(filename,**kwargs)
         if not error:
@@ -222,4 +224,4 @@ class Files_RW():
             error='File cannot be read!'
         if header or comment or setup or data:
             error=''
-        return comment, setup, header, np.array(data).astype('float'), error
+        return comment, setup, header, np.array(data).astype('float'), error 
