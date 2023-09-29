@@ -225,3 +225,40 @@ class Files_RW():
         if header or comment or setup or data:
             error=''
         return comment, setup, header, np.array(data).astype('float'), error 
+    
+    def load_ascii_matrix(self,filename):
+        out=self.container()
+        out.setup=[]
+        out.data=[]
+        out.error='Wrong type of file!'
+        try:
+            with open(filename, 'r') as f:
+                for line in f:
+                    tmp=line.strip()
+                    if tmp.startswith('#'):
+                        out.setup.append(tmp)
+                    else:
+                        out.data.append(tmp.split('\t'))
+        except:
+            out.error='File cannot be read!'
+            
+        if out.setup:
+            out.x,out.x_units,out.y,out.y_units,out.z_units=self.process_ascii_matrix_setup(out.setup)
+        if out.data:
+            try:
+                out.data=np.array(out.data).astype(float)
+                out.error=''
+            except:
+                pass
+        return out
+    
+    def process_ascii_matrix_setup(self, setup):
+        for line in setup:
+            tmp=line.split(':')
+            if tmp[0]=='# Width':
+                [x,x_units]=tmp[-1].strip().split(' ')
+            elif tmp[0]=='# Height':
+                [y,y_units]=tmp[-1].strip().split(' ')
+            elif tmp[0]=='# Value units':
+                z_units=tmp[-1].strip()
+        return float(x),x_units,float(y),y_units,z_units
