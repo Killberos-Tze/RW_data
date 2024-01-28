@@ -18,10 +18,10 @@ import os
 
 class Files_RW():
     hashtags=['#comment','#setup','#data_header','#data_table']
-              
+
     class container():
         pass
-    
+
     #to have it here although not used
     def Add_items(self,text,itemlist,sep):
         for item in itemlist:
@@ -105,7 +105,7 @@ class Files_RW():
                     counter+=1
         except:
             out.error='File cannot be read!'
-        #to be furthered improved
+        #to be further improved
         out.wlength=np.linspace(setup[1],setup[2],int(setup[4]))
         out.wlength_units=setup[0]
         out.data=np.array(out.data)
@@ -224,8 +224,8 @@ class Files_RW():
             error='File cannot be read!'
         if header or comment or setup or data:
             error=''
-        return comment, setup, header, np.array(data).astype('float'), error 
-    
+        return comment, setup, header, np.array(data).astype('float'), error
+
     def load_ascii_matrix(self,filename):
         out=self.container()
         out.setup=[]
@@ -241,7 +241,7 @@ class Files_RW():
                         out.data.append(tmp.split('\t'))
         except:
             out.error='File cannot be read!'
-            
+
         if out.setup:
             out.x,out.x_units,out.y,out.y_units,out.z_units=self.process_ascii_matrix_setup(out.setup)
         if out.data:
@@ -251,7 +251,7 @@ class Files_RW():
             except:
                 pass
         return out
-    
+
     def process_ascii_matrix_setup(self, setup):
         for line in setup:
             tmp=line.split(':')
