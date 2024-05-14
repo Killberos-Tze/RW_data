@@ -180,7 +180,7 @@ class Files_RW():
     def load_reference_TMM(self,filename):
         out=self.container()
         error=''
-        (comment,setup,header,data,error)=self.read_ihtm_file(filename)
+        (comment,setup,header,data,error)=self.read_ihtm_file(filename,tab='\t')
         if not error:
             idx,out.wlength_units,out.data_units,erorr=self.process_TMM_header(header)
         if not error:
@@ -207,7 +207,7 @@ class Files_RW():
     def load_dtsp(self,filename):
         out=self.container()
         error=''
-        (comment,setup,header,data,error)=self.read_ihtm_file(filename)
+        (comment,setup,header,data,error)=self.read_ihtm_file(filename,tab='\t')
         if not error:
             idx,out.wlength_units,out.data_units,out.type,erorr=self.process_dtsp_header(header)
         if not error:
@@ -266,7 +266,7 @@ class Files_RW():
         out.meas=self.container()#data about measurement
         out.cell=self.container()#data about the cell
         out.error=''
-        (comment,setup,header,data,error)=self.read_ihtm_file(filename)
+        (comment,setup,header,data,error)=self.read_ihtm_file(filename,tab='\t')
         if error=='':
             (idx,out.data.v_units,out.data.i_units)=self.process_iv_header(header,'current','voltage')
             v,i=self.process_iv_data(data,idx)
@@ -288,7 +288,7 @@ class Files_RW():
         return out
     
 #for all of my files
-    def read_ihtm_file(self,filename):#this should be the same for all files you are creating either in measurements of after processing except for AFM files
+    def read_ihtm_file(self,filename,tab=None):#this should be the same for all files you are creating either in measurements of after processing except for AFM files
         comment=[]
         setup=[]
         header=[]
@@ -318,14 +318,15 @@ class Files_RW():
                     elif markers[Files_RW.hashtags[1]]:
                         setup.append(tmp)
                     elif markers[Files_RW.hashtags[3]]:
-                        data.append(tmp.split('\t'))
+                        data.append(tmp.split(tab))
                     elif markers[Files_RW.hashtags[2]]:
-                        header.append(tmp.split('\t'))
+                        header.append(tmp.split(tab))
         except:
             error='File cannot be read!'
         if header or comment or setup or data:
             error=''
-        return comment, setup, header, np.array(data).astype('float'), error
+            
+        return comment, setup, header, np.array(data).astype(float), error
 
     def load_ascii_matrix(self,filename):
         out=self.container()
