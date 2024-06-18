@@ -358,7 +358,7 @@ class Files_RW():
         for line in setup:
             tmp=line.split(':')
             if tmp[0] =='# Channel':
-                z_name=tmp[-1].strip.split(' ')[0]
+                z_name=tmp[-1].strip().split(' ')[0]
             elif tmp[0]=='# Width':
                 [x,x_units]=tmp[-1].strip().split(' ')
             elif tmp[0]=='# Height':
