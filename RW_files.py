@@ -345,7 +345,7 @@ class Files_RW():
             out.error='File cannot be read!'
 
         if out.setup:
-            out.x,out.x_units,out.y,out.y_units,out.z_units=self.process_ascii_matrix_setup(out.setup)
+            out.x,out.x_units,out.y,out.y_units,out.z_name,out.z_units=self.process_ascii_matrix_setup(out.setup)
         if out.data:
             try:
                 out.data=np.array(out.data).astype(float)
@@ -357,13 +357,15 @@ class Files_RW():
     def process_ascii_matrix_setup(self, setup):
         for line in setup:
             tmp=line.split(':')
-            if tmp[0]=='# Width':
+            if tmp[0] =='# Channel':
+                z_name=tmp[-1].strip.split(' ')[0]
+            elif tmp[0]=='# Width':
                 [x,x_units]=tmp[-1].strip().split(' ')
             elif tmp[0]=='# Height':
                 [y,y_units]=tmp[-1].strip().split(' ')
             elif tmp[0]=='# Value units':
                 z_units=tmp[-1].strip()
-        return float(x),x_units,float(y),y_units,z_units
+        return float(x),x_units,float(y),y_units,z_name,z_units
 #dta file from prof. Dragisa    
     def load_dta_file(self,filename):
         out=self.container()
