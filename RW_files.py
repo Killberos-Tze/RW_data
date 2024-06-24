@@ -328,6 +328,7 @@ class Files_RW():
             
         return comment, setup, header, np.array(data).astype(float), error
 
+    #setup should be header 
     def load_ascii_matrix(self,filename):
         out=self.container()
         out.setup=[]
