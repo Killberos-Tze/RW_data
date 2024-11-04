@@ -53,12 +53,16 @@ class Files_RW():
 
     def check_IV_measure_inst_file(self,dirname,filename,split):
         ip_list=[]
+        port_list=[]
         with open(os.path.join(dirname,filename), 'r') as f:
             for line in f:
                 a=line.strip()
                 tmp=a.split(split)
-                ip_list.append(tmp[-1])
-        return ip_list
+                if tmp[0]=="ip_address":
+                    ip_list.append(tmp[-1])
+                if tmp[0]=="port":
+                    port_list.append(tmp[-1])
+        return ip_list,port_list
     
     def check_IV_analysis_ini(self,dirname,filename,split):
         out=self.container()
