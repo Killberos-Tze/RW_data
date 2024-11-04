@@ -61,7 +61,7 @@ class Files_RW():
                 if tmp[0]=="ip_address":
                     ip_list.append(tmp[-1])
                 if tmp[0]=="port":
-                    port_list.append(tmp[-1])
+                    port_list.append(int(tmp[-1]))
         return ip_list,port_list
     
     def check_IV_analysis_ini(self,dirname,filename,split):
