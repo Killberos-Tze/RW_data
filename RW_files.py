@@ -12,9 +12,18 @@ import os
 #then you need process functions that are processing it
 #they are called from loading function that is saying all is okay and gives data back to main script
 
-class Check_ini():
-    def E60(dirname,filename,split=':='):
+
+ihtmhashtags=['#comment','#setup','#data_header','#data_table']
+ihtmsplit=":="
+
+class Read_from():
+    def ini_inst(file,split=ihtmsplit,extension='ini'):
+        dirname=os.path.dirname(file)
+        filename=os.path.basename(__file__).replace(os.path.basename(__file__).split('.')[-1],extension)
         out={}
+        if extension=="inst":
+            out["ip_list"]=[]
+            out["port_list"]=[]
         with open(os.path.join(dirname,filename), 'r') as f:
             for line in f:
                 a=line.strip()
@@ -27,46 +36,38 @@ class Check_ini():
                     out["refdir"]=tmp[-1]
                 if tmp[0]=='reference_file':
                     out["reffile"]=tmp[-1]
-        return out
-    
-    def IV_measure(dirname,filename,split=':='):
-        out={}
-        with open(os.path.join(dirname,filename), 'r') as f:
-            for line in f:
-                a=line.strip()
-                tmp=a.split(split)
-                if tmp[0]=='save_file_path':
-                    out["savedir"]=tmp[-1]
-        return out
-    
-    def IV_measure_inst(dirname,filename,split=':='):
-        out={}
-        out["ip_list"]=[]
-        out["port_list"]=[]
-        with open(os.path.join(dirname,filename), 'r') as f:
-            for line in f:
-                a=line.strip()
-                tmp=a.split(split)
+                if tmp[0]=='database_path':
+                    out["dbdir"]=tmp[-1]
+                if tmp[0]=='database_name':
+                    out["dbname"]=tmp[-1]
+                if tmp[0]=='datafiles_path':
+                    out["filedirectory"]=tmp[-1]
                 if tmp[0]=="ip_address":
                     out["ip_list"].append(tmp[-1])
                 if tmp[0]=="port":
                     out["port_list"].append(int(tmp[-1]))
         return out
     
-    def IV_analysis(dirname,filename,split=':='):
-        out={}
-        with open(os.path.join(dirname,filename), 'r') as f:
-            for line in f:
-                a=line.strip()
-                tmp=a.split(split)
-                if tmp[0]=='load_file_path':
-                    out["filedir"]=tmp[-1]
-                if tmp[0]=='database_path':
-                    out["dbdir"]=tmp[-1]
-                if tmp[0]=='database_file':
-                    out["dbname"]=tmp[-1]
-                
-        return out
+
+class Write_to():
+    
+    #for writing ini or any other files related to the app (current extensions ini or inst)
+    def ini_inst(file,text,extension="ini"):
+        dirname=os.path.dirname(file)
+        filename=os.path.basename(__file__).replace(os.path.basename(__file__).split('.')[-1],extension)
+        with open(os.path.join(dirname,filename),'w') as f:
+            for line in text:
+                np.savetxt(f, [line], delimiter='\t', newline='\n', fmt='%s')
+
+    def data(dirname,filename,header,data,fmtlist):
+        with open(os.path.join(dirname,filename),'w') as f:
+            for line in header:
+                np.savetxt(f, [line], delimiter='\t', newline='\n', fmt='%s')
+            for line in data:
+                np.savetxt(f, [line], delimiter='\t', newline='\n', fmt=fmtlist)
+
+
+
 
 
 class Files_RW():
@@ -78,17 +79,7 @@ class Files_RW():
     
 
 #write to files
-    def write_to_file(self,dirname,filename,write):
-        with open(os.path.join(dirname,filename),'w') as f:
-            for line in write:
-                np.savetxt(f, [line], delimiter='\t', newline='\n', fmt='%s')
-
-    def write_header_data(self,dirname,filename,header,data,fmtlist):
-        with open(os.path.join(dirname,filename),'w') as f:
-            for line in header:
-                np.savetxt(f, [line], delimiter='\t', newline='\n', fmt='%s')
-            for line in data:
-                np.savetxt(f, [line], delimiter='\t', newline='\n', fmt=fmtlist)
+    
 
 #E60 raw data
 
