@@ -18,13 +18,12 @@ ihtmsplit=":="
 
 class Read_from():
     def ini_inst(file,split=ihtmsplit,extension='ini'):
-        dirname=os.path.dirname(file)
-        filename=os.path.basename(__file__).replace(os.path.basename(__file__).split('.')[-1],extension)
+        file=file.replace("."+file.split(".")[-1],"."+extension)
         out={}
         if extension=="inst":
             out["ip_list"]=[]
             out["port_list"]=[]
-        with open(os.path.join(dirname,filename), 'r') as f:
+        with open(file, 'r') as f:
             for line in f:
                 a=line.strip()
                 tmp=a.split(split)
@@ -53,14 +52,18 @@ class Write_to():
     
     #for writing ini or any other files related to the app (current extensions ini or inst)
     def ini_inst(file,text,extension="ini"):
-        dirname=os.path.dirname(file)
-        filename=os.path.basename(__file__).replace(os.path.basename(__file__).split('.')[-1],extension)
-        with open(os.path.join(dirname,filename),'w') as f:
+        file=file.replace("."+file.split(".")[-1],"."+extension)
+        with open(file,'w') as f:
             for line in text:
                 np.savetxt(f, [line], delimiter='\t', newline='\n', fmt='%s')
 
-    def data(dirname,filename,header,data,fmtlist):
-        with open(os.path.join(dirname,filename),'w') as f:
+    def data(file,header,data,fmtlist=None):
+        if fmtlist==None:
+            fmtlist=[]
+            for i in range(0,np.shape(data)[1]):
+                fmtlist.append('%.6e')
+        
+        with open(file,'w') as f:
             for line in header:
                 np.savetxt(f, [line], delimiter='\t', newline='\n', fmt='%s')
             for line in data:
