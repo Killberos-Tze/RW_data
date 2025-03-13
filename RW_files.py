@@ -6,45 +6,47 @@ Created on Wed May 18 16:19:18 2022
 @author: tzework
 """
 import numpy as np
-import os
 
 #for loading a file you need first read function that reads it
 #then you need process functions that are processing it
 #they are called from loading function that is saying all is okay and gives data back to main script
+#future inst file example
+#ip_list:=192.168.1.210,192.168.1.220
+#port_list:=5025,5025
 
+ihtm_split=":="
 
-ihtmhashtags=['#comment','#setup','#data_header','#data_table']
-ihtmsplit=":="
+ihtm_hashtags=['#comment',
+              '#setup',
+              '#data_header',
+              '#data_table']
+
+ihtm_keywords=['load_file_path',
+                 'save_file_path',
+                 'ref_file_path',
+                 'ref_file_name',
+                 'data_base_path',
+                 'data_base_name',
+                 'ip_list',
+                 'port_list']
+
 
 class Read_from():
-    def ini_inst(file,split=ihtmsplit,extension='ini'):
+    def ini_inst(file, extension='ini', split=ihtm_split, kwords=ihtm_keywords):
         file=file.replace("."+file.split(".")[-1],"."+extension)
         out={}
-        if extension=="inst":
-            out["ip_list"]=[]
-            out["port_list"]=[]
         with open(file, 'r') as f:
             for line in f:
                 a=line.strip()
                 tmp=a.split(split)
-                if tmp[0]=='load_file_path':
-                    out["filedir"]=tmp[-1]
-                if tmp[0]=='save_file_path':
-                    out["savedir"]=tmp[-1]
-                if tmp[0]=='reference_path':
-                    out["refdir"]=tmp[-1]
-                if tmp[0]=='reference_file':
-                    out["reffile"]=tmp[-1]
-                if tmp[0]=='database_path':
-                    out["dbdir"]=tmp[-1]
-                if tmp[0]=='database_name':
-                    out["dbname"]=tmp[-1]
-                if tmp[0]=='datafiles_path':
-                    out["filedirectory"]=tmp[-1]
-                if tmp[0]=="ip_address":
-                    out["ip_list"].append(tmp[-1])
-                if tmp[0]=="port":
-                    out["port_list"].append(int(tmp[-1]))
+                for kword in kwords:
+                    if tmp[0] == kword:
+                        if "list" in kword:
+                            out["kword"]=tmp[-1].split(",")
+                        else:
+                            out["kword"]=tmp[-1]
+                if "port_list" in out:
+                    out['port_list']=[int(port) for port in out['port_list']]
         return out
     
 
