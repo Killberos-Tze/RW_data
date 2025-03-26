@@ -5,7 +5,7 @@ Created on Wed May 18 16:19:18 2022
 
 @author: tzework
 """
-import numpy as np
+from numpy import array, linspace, append, savetxt, shape, swapaxes
 
 #for loading a file you need first read function that reads it
 #then you need process functions that are processing it
@@ -15,10 +15,12 @@ import numpy as np
 #port_list:=5025,5025
 
 ihtm_split=":="
+ihtm_tab='\t'
 
-ihtm_hashtags=['#comment',
-              '#setup',
-              '#data_header',
+ihtm_sections=['#comment',#never used in old ones
+              '#setup',#never used in olf ones
+              '#data_header',#to remain compatible with old files 
+              '#data_summary',#for new files
               '#data_table']
 
 ihtm_keywords=['load_file_path',
@@ -32,44 +34,164 @@ ihtm_keywords=['load_file_path',
 
 
 class Read_from():
+    def tmm_proj(filename, split=ihtm_split):
+        out={}
+        error=""
+        try:
+            with open(filename, 'r') as f:
+                for line in f:
+                    tmp=line.strip()
+                    a=tmp.split(split)
+                    if a[0].startswith("Layer_") :
+                        out[a[0]]=a[-1].split(",")
+                    else:
+                        out[a[0]]=a[-1]
+        except:
+            error='File cannot be read!'
+        out["Layer_thickness"]=[float(item) for item in out["Layer_thickness"]]
+        out['Input_angle']=float(out['Input_angle'])
+        out['Simulation_step']=float(out['Simulation_step'])
+        
+        return out,error
+    
+    
     def ini_inst(file, extension='ini', split=ihtm_split, kwords=ihtm_keywords):
         file=file.replace("."+file.split(".")[-1],"."+extension)
         out={}
-        with open(file, 'r') as f:
-            for line in f:
-                a=line.strip()
-                tmp=a.split(split)
-                for kword in kwords:
-                    if tmp[0] == kword:
-                        if "list" in kword:
-                            out["kword"]=tmp[-1].split(",")
-                        else:
-                            out["kword"]=tmp[-1]
-                if "port_list" in out:
-                    out['port_list']=[int(port) for port in out['port_list']]
-        return out
+        error=''
+        try:
+            with open(file, 'r') as f:
+                for line in f:
+                    a=line.strip()
+                    tmp=a.split(split)
+                    for kword in kwords:
+                        if tmp[0] == kword:
+                            if "list" in kword:
+                                out[kword]=tmp[-1].split(",")
+                            else:
+                                out[kword]=tmp[-1]
+                    if "port_list" in out:
+                        out['port_list']=[int(port) for port in out['port_list']]
+        except:
+            error='File cannot be read!'
+        return out,error
     
+    def dsp(filename):
+        out={}
+        counter=1
+        info_marker=0
+        x_data_tmp=[]
+        y_data_tmp=[]
+        data_marker=0
+        out["#data_summary"]={}
+        out["#data_summary"]['x1_name']='wavelength'
+        error=''
+        try:
+            with open(filename,'r') as f:
+                for line in f:
+                    tmp=line.strip()
+                    if counter==10:#on  10 row you get info about measurement
+                        info_marker=0
+                        out["#data_summary"]['y1_name']=tmp
+                        if tmp.startswith('%'):
+                            out["#data_summary"]['y1_unit']='%'
+                    if info_marker:
+                        x_data_tmp.append(float(tmp));
+                    if tmp=='nm':#after units you get info about measurement setup
+                        out["#data_summary"]['x1_unit']=tmp
+                        info_marker=1
+                    if data_marker:
+                        y_data_tmp.append(float(tmp))
+                    if tmp=='#DATA':
+                        data_marker=1
+                    counter+=1
+        except:
+            error='File cannot be read!'
+        #to be further improved
+        x_data=linspace(x_data_tmp[0],x_data_tmp[1],int(x_data_tmp[3]))
+        y_data=array(y_data_tmp)
+        out['#data_table']=swapaxes(array([x_data,y_data]),0,1)#find transpose
+        if out["#data_summary"]['y1_name']=='%R':
+            out["#data_summary"]['y1_name']='Reflectance'
+        elif out["#data_summary"]['y1_name']=='%T':
+            out["#data_summary"]['y1_name']='Transmittance'
+        elif out["#data_summary"]['y1_name']=='A':
+            out["#data_summary"]['y1_name']='Absorbance'
+        return out,error
+    
+    def ihtm(filename,split=ihtm_split,tab=ihtm_tab):
+        out={}
+        error=''
+        try:
+            with open(filename,'r') as f:
+                for line in f:
+                    tmp=line.strip()
+                    if tmp in ihtm_sections:
+                        kword=tmp
+                        if kword == "#data_header":
+                            out[kword]=[]
+                        elif kword=="#data_table":
+                            out[kword]=[]
+                        else:
+                            out[kword]={}
+                    else:
+                        if kword == "#data_header":
+                            out[kword].append(tmp.split(tab))
+                        elif kword=="#data_table":
+                            out[kword].append(tmp.split(tab))
+                        else:
+                            a=tmp.split(split)
+                            out[kword][a[0]]=a[1]
+                        
+        except:
+            error='File cannot be read!'
+        if "#data_table" in out:
+            out["#data_table"]=array(out["#data_table"]).astype(float)
+        if "#data_header" in out:
+            out['#data_summary']={}
+            out['#data_summary']['x1_name']=out['#data_header'][0][0]
+            out['#data_summary']['x1_unit']=out['#data_header'][1][0]
+            for i in range(len(out['#data_header'][0])-1):
+                out['#data_summary'][f'y{i+1}_name']=out['#data_header'][0][i+1]
+                out['#data_summary'][f'y{i+1}_unit']=out['#data_header'][1][i+1]
+            out.pop("#data_header")
+        
+        poplist=[]
+        for kword in out:
+            if kword!="#data_table":
+                if not bool(out[kword]):
+                    poplist.append(kword)
+        for kword in poplist:
+            out.pop(kword)
+        return out,error
 
 class Write_to():
     
     #for writing ini or any other files related to the app (current extensions ini or inst)
-    def ini_inst(file,text,extension="ini"):
+    #input text should be a dictionary, file is __file__
+    def ini_inst(file,text_dict,extension="ini"):
         file=file.replace("."+file.split(".")[-1],"."+extension)
         with open(file,'w') as f:
-            for line in text:
-                np.savetxt(f, [line], delimiter='\t', newline='\n', fmt='%s')
-
-    def data(file,header,data,fmtlist=None):
+            for keyword in text_dict:
+                savetxt(f, [keyword+ihtm_split+text_dict[keyword]], delimiter='\t', newline='\n', fmt='%s')
+    
+    #you pack everything into dictionary, normal filename
+    def data(filename,text_dict,fmtlist=None):
         if fmtlist==None:
             fmtlist=[]
-            for i in range(0,np.shape(data)[1]):
+            for i in range(0,shape(text_dict['#data_table'])[1]):
                 fmtlist.append('%.6e')
         
-        with open(file,'w') as f:
-            for line in header:
-                np.savetxt(f, [line], delimiter='\t', newline='\n', fmt='%s')
-            for line in data:
-                np.savetxt(f, [line], delimiter='\t', newline='\n', fmt=fmtlist)
+        with open(filename,'w') as f:
+            for keyword in text_dict:
+                savetxt(f, [keyword], delimiter='\t', newline='\n', fmt='%s')
+                if keyword=="#data_table":    
+                    for line in text_dict[keyword]:
+                        savetxt(f, [line], delimiter='\t', newline='\n', fmt=fmtlist)
+                else:
+                    for keywrd in text_dict[keyword]:
+                        savetxt(f, [keywrd+ihtm_split+text_dict[keyword][keywrd]], delimiter='\t', newline='\n', fmt='%s')
+                
 
 
 
@@ -119,9 +241,9 @@ class Files_RW():
         except:
             out.error='File cannot be read!'
         #to be further improved
-        out.wlength=np.linspace(setup[1],setup[2],int(setup[4]))
+        out.wlength=linspace(setup[1],setup[2],int(setup[4]))
         out.wlength_units=setup[0]
-        out.data=np.array(out.data)
+        out.data=array(out.data)
         if out.type=='%R':
             out.type='Reflectance'
         elif out.type=='%T':
@@ -251,7 +373,7 @@ class Files_RW():
         return (idx, v_units, i_units)
     
     def process_iv_data(self,table,idx):
-        data=np.array(table)
+        data=array(table)
         v=data[:,idx.v_col[0]].astype(float)
         for i in range(1,len(idx.v_col)):
             v+=data[:,idx.v_col[i]].astype(float)
@@ -324,7 +446,7 @@ class Files_RW():
         if header or comment or setup or data:
             error=''
             
-        return comment, setup, header, np.array(data).astype(float), error
+        return comment, setup, header, array(data).astype(float), error
 
     #setup should be header 
     def load_ascii_matrix(self,filename):
@@ -347,7 +469,7 @@ class Files_RW():
             out.x,out.x_units,out.y,out.y_units,out.z_name,out.z_units=self.process_ascii_matrix_setup(out.setup)
         if out.data:
             try:
-                out.data=np.array(out.data).astype(float)
+                out.data=array(out.data).astype(float)
                 out.error=''
             except:
                 pass
