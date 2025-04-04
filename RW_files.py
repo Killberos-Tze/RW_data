@@ -13,6 +13,7 @@ from numpy import array, linspace, append, savetxt, shape, swapaxes
 #future inst file example
 #ip_list:=192.168.1.210,192.168.1.220
 #port_list:=5025,5025
+#unitless quantities will have unit of "None"
 
 ihtm_split=":="
 ihtm_tab='\t'
@@ -34,6 +35,41 @@ ihtm_keywords=['load_file_path',
 
 
 class Read_from():
+    def gwyddion_ascii_matrix(filename,tab=ihtm_tab):
+        out={}
+        error=''
+        out['#data_table']=[]
+        out['#data_summary']={'x1_name':'Position','y1_name':'Position'}
+        try:
+            with open(filename, 'r') as f:
+                for line in f:
+                    tmp=line.strip()
+                    if tmp.startswith('#'):
+                        tmp=line.split(':')
+                        if tmp[0]=="# Channel":
+                            out['#data_summary']['z1_name']=tmp[1].split()[0].strip()
+                        elif tmp[0]=="# Value units":
+                            out['#data_summary']['z1_unit']=tmp[1].strip()
+                        elif tmp[0]=="# Width":
+                            a=tmp[1].split()
+                            out['#data_summary']['x1_value']=float(a[0].strip())
+                            out['#data_summary']['x1_unit']=a[1].strip()
+                        elif tmp[0]=="# Height":
+                            a=tmp[1].split()
+                            out['#data_summary']['y1_value']=float(a[0].strip())
+                            out['#data_summary']['y1_unit']=a[1].strip()
+                    else:
+                        out['#data_table'].append(tmp.split(tab))
+        except:
+            error='File cannot be read!'
+        
+        if "#data_table" in out:
+            out["#data_table"]=array(out["#data_table"]).astype(float)
+
+        return out,error
+    
+    
+    
     def tmm_proj(filename, split=ihtm_split):
         out={}
         error=""
@@ -49,7 +85,7 @@ class Read_from():
         except:
             error='File cannot be read!'
         out["Layer_thickness"]=[float(item) for item in out["Layer_thickness"]]
-        out['Input_angle']=float(out['Input_angle'])
+        out['Input,_angle']=float(out['Input_angle'])
         out['Simulation_step']=float(out['Simulation_step'])
         
         return out,error
@@ -147,13 +183,19 @@ class Read_from():
             error='File cannot be read!'
         if "#data_table" in out:
             out["#data_table"]=array(out["#data_table"]).astype(float)
+        #this is for the old files
         if "#data_header" in out:
             out['#data_summary']={}
             out['#data_summary']['x1_name']=out['#data_header'][0][0]
             out['#data_summary']['x1_unit']=out['#data_header'][1][0]
+            out['#data_summary']['x1_col']=0
+            while len(out['#data_header'][0])!=len(out['#data_header'][1]):
+                out['#data_header'][1].append('None')#if quantity was unitless previously
+            
             for i in range(len(out['#data_header'][0])-1):
-                out['#data_summary'][f'y{i+1}_name']=out['#data_header'][0][i+1]
-                out['#data_summary'][f'y{i+1}_unit']=out['#data_header'][1][i+1]
+                out['#data_summary'][f'y1_{i+1}_name']=out['#data_header'][0][i+1]
+                out['#data_summary'][f'y1_{i+1}_unit']=out['#data_header'][1][i+1]
+                out['#data_summary'][f'y1_{i+1}_col']=i+1
             out.pop("#data_header")
         
         poplist=[]
@@ -164,6 +206,16 @@ class Read_from():
         for kword in poplist:
             out.pop(kword)
         return out,error
+    
+class Help():
+    #mask example [x1,y1,x2,y2] or [x1,y1_1,y1_2]
+    def generate_data_dict(mask,quantities,units):
+        out={}
+        for item in enumerate(mask):
+            out[f'{item[1]}_name']=quantities[item[0]]
+            out[f'{item[1]}_unit']=units[item[0]]
+            out[f'{item[1]}_col']=item[0]
+        return out
 
 class Write_to():
     
@@ -174,6 +226,9 @@ class Write_to():
         with open(file,'w') as f:
             for keyword in text_dict:
                 savetxt(f, [keyword+ihtm_split+text_dict[keyword]], delimiter='\t', newline='\n', fmt='%s')
+    
+   
+            
     
     #you pack everything into dictionary, normal filename
     def data(filename,text_dict,fmtlist=None):
@@ -190,7 +245,7 @@ class Write_to():
                         savetxt(f, [line], delimiter='\t', newline='\n', fmt=fmtlist)
                 else:
                     for keywrd in text_dict[keyword]:
-                        savetxt(f, [keywrd+ihtm_split+text_dict[keyword][keywrd]], delimiter='\t', newline='\n', fmt='%s')
+                        savetxt(f, [keywrd+ihtm_split+str(text_dict[keyword][keywrd])], delimiter='\t', newline='\n', fmt='%s')
                 
 
 
