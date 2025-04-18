@@ -15,11 +15,15 @@ from numpy import array, linspace, append, savetxt, shape, swapaxes
 #port_list:=5025,5025
 #unitless quantities will have unit of "None"
 
-ihtm_split=":="
-ihtm_tab='\t'
+ihtm_kword_sep=":="
+ihtm_sep='\t'
+coma_sep=','
+sep_list=['\t',' ',',',':','\\']
 
-ihtm_sections=['#comment',#never used in old ones
-              '#setup',#never used in olf ones
+
+ihtm_sections=['#comment',#never used in old ones here we put info about user and something about measurement
+              '#setup',#never used in old ones here we should write about device, time, date, values
+              '#sample',#for new files, here we should put into about sample name, area, number of cells, material,configuratrion
               '#data_header',#to remain compatible with old files 
               '#data_summary',#for new files
               '#data_table']
@@ -31,15 +35,91 @@ ihtm_keywords=['load_file_path',
                  'data_base_path',
                  'data_base_name',
                  'ip_list',
-                 'port_list']
+                 'port_list',
+                 'inst_name_list']
 
 
 class Read_from():
-    def gwyddion_ascii_matrix(filename,tab=ihtm_tab):
+    def nk(filename):
+        out={}
+        error=''
+        sep_found=False
+        data_marker=False
+        out['#data_table']=[]
+        out['#data_summary']={
+            'x1_name':'wavelength',
+            'y1_1_name':'n',
+            'y1_2_name':'k',
+            'x1_col':0,
+            'y1_1_col':1,
+            'y1_2_col':2,
+            'y1_1_unit':'None',
+            'y1_2_unit':'None',
+            }
+        try:
+            with open(filename, 'r') as f:
+                for line in f:
+                    tmp=line.strip()
+                    if not sep_found:
+                        sep=Help.find_separator(tmp,3,sep_list)
+                        if sep!=None:
+                            sep_found=True
+                        if sep_found:
+                            a=tmp.split(sep)
+                            out['#data_summary']['x1_unit']=a[0]
+                            out['#data_summary']['y1_1_name']=a[1]
+                            out['#data_summary']['y1_2_name']=a[2]
+                            data_marker=True
+                            continue
+                        else:
+                            error="Can't find proper split!"
+                            break
+                    if data_marker:
+                        out['#data_table'].append(tmp.split(sep))
+            out["#data_table"]=array(out["#data_table"]).astype(float)    
+        except:
+            error='File cannot be read!'
+        return out,error
+    
+    def yml(filename,tab=' '):
+        data_marker=False
+        out={}
+        error=''
+        out['#data_table']=[]
+        out['#data_summary']={
+            'x1_name':'wavelength',
+            'y1_1_name':'n',
+            'y1_2_name':'k',
+            'x1_col':0,
+            'y1_1_col':1,
+            'y1_2_col':2,
+            'x1_unit':'μm',
+            'y1_1_unit':'None',
+            'y1_2_unit':'None',
+            }
+        try:
+            with open(filename, 'r') as f:
+                for line in f:
+                    tmp=line.strip()
+                    if tmp.startswith('data:'):
+                        data_marker=True
+                        continue
+                    if data_marker:
+                        out['#data_table'].append(tmp.split(tab)) 
+            out["#data_table"]=array(out["#data_table"]).astype(float)
+            out['#data_summary']['tot_row'],out['#data_summary']['tot_col']=shape(out["#data_table"])
+        except:
+            error='File cannot be read!'
+        
+        return out,error
+    
+    def gwyddion_xyz(filename,sep=ihtm_sep):
         out={}
         error=''
         out['#data_table']=[]
         out['#data_summary']={'x1_name':'Position','y1_name':'Position'}
+        out['#data_summary']['x1_col']=0
+        out['#data_summary']['y1_col']=1
         try:
             with open(filename, 'r') as f:
                 for line in f:
@@ -48,6 +128,37 @@ class Read_from():
                         tmp=line.split(':')
                         if tmp[0]=="# Channel":
                             out['#data_summary']['z1_name']=tmp[1].split()[0].strip()
+                            out['#data_summary']['z1_col']=2
+                        elif tmp[0]=="# Lateral units":
+                            out['#data_summary']['x1_unit']=tmp[1].strip()
+                            out['#data_summary']['y1_unit']=tmp[1].strip()
+                        elif tmp[0]=="# Value units":
+                            out['#data_summary']['z1_unit']=tmp[1].strip()
+                    else:
+                        out['#data_table'].append(tmp.split(sep))
+            out["#data_table"]=array(out["#data_table"]).astype(float)
+            out['#data_summary']['tot_row'],out['#data_summary']['tot_col']=shape(out["#data_table"])
+        except:
+            error='File cannot be read!'
+
+        return out,error
+    
+    def gwyddion_ascii_matrix(filename,sep=ihtm_sep):
+        out={}
+        error=''
+        out['#data_table']=[]
+        out['#data_summary']={'x1_name':'Position','y1_name':'Position'}
+        out['#data_summary']['x1_col']='None'
+        out['#data_summary']['y1_col']='None'
+        try:
+            with open(filename, 'r') as f:
+                for line in f:
+                    tmp=line.strip()
+                    if tmp.startswith('#'):
+                        tmp=line.split(':')
+                        if tmp[0]=="# Channel":
+                            out['#data_summary']['z1_name']=tmp[1].split()[0].strip()
+                            out['#data_summary']['z1_col']='#data_table'
                         elif tmp[0]=="# Value units":
                             out['#data_summary']['z1_unit']=tmp[1].strip()
                         elif tmp[0]=="# Width":
@@ -59,18 +170,70 @@ class Read_from():
                             out['#data_summary']['y1_value']=float(a[0].strip())
                             out['#data_summary']['y1_unit']=a[1].strip()
                     else:
-                        out['#data_table'].append(tmp.split(tab))
+                        out['#data_table'].append(tmp.split(sep))
+            out["#data_table"]=array(out["#data_table"]).astype(float)
+            out['#data_summary']['tot_row'],out['#data_summary']['tot_col']=shape(out["#data_table"])
         except:
             error='File cannot be read!'
         
-        if "#data_table" in out:
-            out["#data_table"]=array(out["#data_table"]).astype(float)
 
         return out,error
     
     
+    def dta(filename):
+        out={}
+        error=''
+        out['#data_table']=[]
+        out['#data_summary']={}
+        out['#setup']={}
+        table_marker=0
+        try:
+            with open(filename, 'r') as f:
+                for line in f:
+                    tmp=line.strip().split()
+                    if tmp:
+                        if tmp[0]=='DATE':
+                            temp=tmp[2].split('/')
+                            out['#setup'][tmp[3]]=temp[2]+'.'+temp[0]+'.'+temp[1]
+                        if tmp[0]=='TIME':
+                            out['#setup'][tmp[3]]=tmp[2]
+                        if tmp[0]=='PSTAT':
+                            out['#setup'][tmp[3]]=tmp[2]
+                        if tmp[0]=='SCANRATE':
+                            out['#setup']['Scanrate']=tmp[2]
+                            out['#setup']['Scanrate_unit']=tmp[5]
+                        if tmp[0]=='STEPSIZE':
+                            out['#setup']['Stepsize']=tmp[2]
+                            out['#setup']['Stepsize_unit']=tmp[5]
+                        if tmp[0]=='AREA':
+                            out['#setup']['Device_area']=tmp[2]
+                            out['#setup']['Device_area_unit']=tmp[5]
+                        if tmp[0]=="Pt":
+                            
+                            out['#data_summary']['x1_name']=tmp[2]
+                            out['#data_summary']['x1_col']=2
+                            out['#data_summary']['y1_name']=tmp[3]
+                            out['#data_summary']['y1_col']=3
+                        if tmp[0]=="#":
+                            out['#data_summary']['x1_unit']=tmp[2]
+                            out['#data_summary']['y1_unit']=tmp[5]
+                            table_marker=1
+                            continue
+                        if table_marker:
+                            out['#data_table'].append(tmp)
+           
+            out['#data_table']=array(out["#data_table"])
+            out['#data_table']=out['#data_table'][:,out['#data_summary']['x1_col']:out['#data_summary']['y1_col']+1]     
+            out['#data_summary']['x1_col']=0
+            out['#data_summary']['y1_col']=1
+            out['#data_summary']['tot_row'],out['#data_summary']['tot_col']=shape(out["#data_table"])
+        except:
+            error='File cannot be read!'
+            
+        return out,error        
     
-    def tmm_proj(filename, split=ihtm_split):
+    
+    def tmm_proj(filename, split=ihtm_kword_sep, sep=ihtm_sep):
         out={}
         error=""
         try:
@@ -78,20 +241,20 @@ class Read_from():
                 for line in f:
                     tmp=line.strip()
                     a=tmp.split(split)
-                    if a[0].startswith("Layer_") :
-                        out[a[0]]=a[-1].split(",")
+                    if a[0].startswith("Layer_"):
+                        out[a[0]]=a[-1].split(sep)
                     else:
                         out[a[0]]=a[-1]
         except:
             error='File cannot be read!'
         out["Layer_thickness"]=[float(item) for item in out["Layer_thickness"]]
-        out['Input,_angle']=float(out['Input_angle'])
+        out['Input_angle']=float(out['Input_angle'])
         out['Simulation_step']=float(out['Simulation_step'])
         
         return out,error
     
     
-    def ini_inst(file, extension='ini', split=ihtm_split, kwords=ihtm_keywords):
+    def ini_inst(file, extension='ini', split=ihtm_kword_sep, kwords=ihtm_keywords, sep=ihtm_sep):
         file=file.replace("."+file.split(".")[-1],"."+extension)
         out={}
         error=''
@@ -102,8 +265,8 @@ class Read_from():
                     tmp=a.split(split)
                     for kword in kwords:
                         if tmp[0] == kword:
-                            if "list" in kword:
-                                out[kword]=tmp[-1].split(",")
+                            if "_list" in kword:
+                                out[kword]=tmp[-1].split(sep)
                             else:
                                 out[kword]=tmp[-1]
                     if "port_list" in out:
@@ -121,6 +284,7 @@ class Read_from():
         data_marker=0
         out["#data_summary"]={}
         out["#data_summary"]['x1_name']='wavelength'
+        out["#data_summary"]['x1_col']=0
         error=''
         try:
             with open(filename,'r') as f:
@@ -129,6 +293,7 @@ class Read_from():
                     if counter==10:#on  10 row you get info about measurement
                         info_marker=0
                         out["#data_summary"]['y1_name']=tmp
+                        out["#data_summary"]['y1_col']=1
                         if tmp.startswith('%'):
                             out["#data_summary"]['y1_unit']='%'
                     if info_marker:
@@ -141,21 +306,23 @@ class Read_from():
                     if tmp=='#DATA':
                         data_marker=1
                     counter+=1
+            
+            x_data=linspace(x_data_tmp[0],x_data_tmp[1],int(x_data_tmp[3]))
+            y_data=array(y_data_tmp)
+            out['#data_table']=swapaxes(array([x_data,y_data]),0,1)#find transpose
+            if out["#data_summary"]['y1_name']=='%R':
+                out["#data_summary"]['y1_name']='Reflectance'
+            elif out["#data_summary"]['y1_name']=='%T':
+                out["#data_summary"]['y_name']='Transmittance'
+            elif out["#data_summary"]['y_name']=='A':
+                out["#data_summary"]['y_name']='Absorbance'
+            out['#data_summary']['tot_row'],out['#data_summary']['tot_col']=shape(out["#data_table"])
         except:
             error='File cannot be read!'
-        #to be further improved
-        x_data=linspace(x_data_tmp[0],x_data_tmp[1],int(x_data_tmp[3]))
-        y_data=array(y_data_tmp)
-        out['#data_table']=swapaxes(array([x_data,y_data]),0,1)#find transpose
-        if out["#data_summary"]['y1_name']=='%R':
-            out["#data_summary"]['y1_name']='Reflectance'
-        elif out["#data_summary"]['y1_name']=='%T':
-            out["#data_summary"]['y1_name']='Transmittance'
-        elif out["#data_summary"]['y1_name']=='A':
-            out["#data_summary"]['y1_name']='Absorbance'
+        
         return out,error
     
-    def ihtm(filename,split=ihtm_split,tab=ihtm_tab):
+    def ihtm(filename,split=ihtm_kword_sep,sep=ihtm_sep):
         out={}
         error=''
         try:
@@ -172,12 +339,15 @@ class Read_from():
                             out[kword]={}
                     else:
                         if kword == "#data_header":
-                            out[kword].append(tmp.split(tab))
+                            out[kword].append(tmp.split(sep))
                         elif kword=="#data_table":
-                            out[kword].append(tmp.split(tab))
+                            out[kword].append(tmp.split(sep))
                         else:
                             a=tmp.split(split)
-                            out[kword][a[0]]=a[1]
+                            if '_list' in a[0]:
+                                out[kword][a[0]]=a[1].split(sep)
+                            else:
+                                out[kword][a[0]]=a[1]
                         
         except:
             error='File cannot be read!'
@@ -197,8 +367,10 @@ class Read_from():
                 out['#data_summary'][f'y1_{i+1}_unit']=out['#data_header'][1][i+1]
                 out['#data_summary'][f'y1_{i+1}_col']=i+1
             out.pop("#data_header")
+            out['#data_summary']['tot_row'],out['#data_summary']['tot_col']=shape(out["#data_table"])
         
         poplist=[]
+        #clearing out empty keywords
         for kword in out:
             if kword!="#data_table":
                 if not bool(out[kword]):
@@ -208,27 +380,37 @@ class Read_from():
         return out,error
     
 class Help():
-    #mask example [x1,y1,x2,y2] or [x1,y1_1,y1_2]
+    #mask example ['x1','y1','x2','y2'] or ['x1','y1_1','y1_2']
     def generate_data_dict(mask,quantities,units):
         out={}
+        out['Label_list']=mask
         for item in enumerate(mask):
-            out[f'{item[1]}_name']=quantities[item[0]]
-            out[f'{item[1]}_unit']=units[item[0]]
-            out[f'{item[1]}_col']=item[0]
+            out[f'{item[1]}']={}
+            out[f'{item[1]}']['name']=quantities[item[0]]
+            out[f'{item[1]}']['unit']=units[item[0]]
+            out[f'{item[1]}']['col']=item[0]
         return out
+    
+    def find_separator(string_to_be_separated,exprected_col_no,sep_list):
+        for item in sep_list:
+            if exprected_col_no==len(string_to_be_separated.split(item)):
+                return item
+        return None
+                
 
 class Write_to():
     
     #for writing ini or any other files related to the app (current extensions ini or inst)
     #input text should be a dictionary, file is __file__
-    def ini_inst(file,text_dict,extension="ini"):
+    def ini_inst_proj(file,text_dict,extension="ini"):
         file=file.replace("."+file.split(".")[-1],"."+extension)
         with open(file,'w') as f:
             for keyword in text_dict:
-                savetxt(f, [keyword+ihtm_split+text_dict[keyword]], delimiter='\t', newline='\n', fmt='%s')
-    
-   
-            
+                if ("Layer_" in keyword) or ("_list" in keyword):
+                    tmp=[str(item) for item in text_dict[keyword]]
+                    savetxt(f, [keyword+ihtm_kword_sep+ihtm_sep.join(tmp)], delimiter='\t', newline='\n', fmt='%s')
+                else:
+                    savetxt(f, [keyword+ihtm_kword_sep+str(text_dict[keyword])], delimiter='\t', newline='\n', fmt='%s')
     
     #you pack everything into dictionary, normal filename
     def data(filename,text_dict,fmtlist=None):
@@ -245,7 +427,11 @@ class Write_to():
                         savetxt(f, [line], delimiter='\t', newline='\n', fmt=fmtlist)
                 else:
                     for keywrd in text_dict[keyword]:
-                        savetxt(f, [keywrd+ihtm_split+str(text_dict[keyword][keywrd])], delimiter='\t', newline='\n', fmt='%s')
+                        if '_list' in keywrd:
+                            tmp=[str(item) for item in text_dict[keyword][keywrd]]
+                            savetxt(f, [keywrd+ihtm_kword_sep+ihtm_sep.join(tmp)], delimiter='\t', newline='\n', fmt='%s')
+                        else:
+                            savetxt(f, [keywrd+ihtm_kword_sep+str(text_dict[keyword][keywrd])], delimiter='\t', newline='\n', fmt='%s')
                 
 
 
