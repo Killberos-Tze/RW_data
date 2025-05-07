@@ -62,23 +62,24 @@ class Read_from():
                     tmp=line.strip()
                     if not sep_found:
                         sep=Help.find_separator(tmp,3,sep_list)
-                        if sep!=None:
-                            sep_found=True
-                        if sep_found:
-                            a=tmp.split(sep)
-                            out['#data_summary']['x1_unit']=a[0]
-                            out['#data_summary']['y1_1_name']=a[1]
-                            out['#data_summary']['y1_2_name']=a[2]
-                            data_marker=True
-                            continue
-                        else:
+                        if sep==None:
                             error="Can't find proper split!"
                             break
+                            
+                        sep_found=True
+                        a=tmp.split(sep)
+                        out['#data_summary']['x1_unit']=a[0]
+                        out['#data_summary']['y1_1_name']=a[1]
+                        out['#data_summary']['y1_2_name']=a[2]
+                        data_marker=True
+                        continue
+                    
                     if data_marker:
-                        out['#data_table'].append(tmp.split(sep))
-            out["#data_table"]=array(out["#data_table"]).astype(float)    
+                        out['#data_table'].append(tmp.split(sep))    
         except:
             error='File cannot be read!'
+        if out["#data_table"]:
+            out["#data_table"]=array(out["#data_table"]).astype(float)
         return out,error
     
     def yml(filename,tab=' '):
@@ -385,10 +386,9 @@ class Help():
         out={}
         out['Label_list']=mask
         for item in enumerate(mask):
-            out[f'{item[1]}']={}
-            out[f'{item[1]}']['name']=quantities[item[0]]
-            out[f'{item[1]}']['unit']=units[item[0]]
-            out[f'{item[1]}']['col']=item[0]
+            out[f'{item[1]}_name']=quantities[item[0]]
+            out[f'{item[1]}_unit']=units[item[0]]
+            out[f'{item[1]}_col']=item[0]
         return out
     
     def find_separator(string_to_be_separated,exprected_col_no,sep_list):
