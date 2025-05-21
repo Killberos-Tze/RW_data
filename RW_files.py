@@ -6,6 +6,7 @@ Created on Wed May 18 16:19:18 2022
 @author: tzework
 """
 from numpy import array, linspace, append, savetxt, shape, swapaxes
+from os import path
 
 #for loading a file you need first read function that reads it
 #then you need process functions that are processing it
@@ -448,7 +449,17 @@ class Files_RW():
     
 
 #write to files
-    
+    def write_to_file(self,dirname,filename,write):
+        with open(path.join(dirname,filename),'w') as f:
+            for line in write:
+                savetxt(f, [line], delimiter='\t', newline='\n', fmt='%s')
+
+    def write_header_data(self,dirname,filename,header,data,fmtlist):
+        with open(path.join(dirname,filename),'w') as f:
+            for line in header:
+                savetxt(f, [line], delimiter='\t', newline='\n', fmt='%s')
+            for line in data:
+                savetxt(f, [line], delimiter='\t', newline='\n', fmt=fmtlist)
 
 #E60 raw data
 
