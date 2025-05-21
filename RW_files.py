@@ -448,6 +448,62 @@ class Files_RW():
         pass
     
 
+#ini stuff
+    def check_E60_ini(self,dirname,filename,split):
+        out=self.container()
+        with open(path.join(dirname,filename), 'r') as f:
+            for line in f:
+                a=line.strip()
+                tmp=a.split(split)
+                if tmp[0]=='load_file_path':
+                    out.filedir=tmp[-1]
+                if tmp[0]=='save_file_path':
+                    out.savedir=tmp[-1]
+                if tmp[0]=='reference_path':
+                    out.refdir=tmp[-1]
+                if tmp[0]=='reference_file':
+                    out.reffile=tmp[-1]
+        return out
+
+    def check_IV_measure_ini(self,dirname,filename,split):
+        out=self.container()
+        with open(path.join(dirname,filename), 'r') as f:
+            for line in f:
+                a=line.strip()
+                tmp=a.split(split)
+                if tmp[0]=='save_file_path':
+                    out.savedir=tmp[-1]
+        return out
+
+    def check_IV_measure_inst_file(self,dirname,filename,split):
+        ip_list=[]
+        port_list=[]
+        with open(path.join(dirname,filename), 'r') as f:
+            for line in f:
+                a=line.strip()
+                tmp=a.split(split)
+                if tmp[0]=="ip_address":
+                    ip_list.append(tmp[-1])
+                if tmp[0]=="port":
+                    port_list.append(int(tmp[-1]))
+        return ip_list,port_list
+    
+    def check_IV_analysis_ini(self,dirname,filename,split):
+        out=self.container()
+        with open(path.join(dirname,filename), 'r') as f:
+            for line in f:
+                a=line.strip()
+                tmp=a.split(split)
+                if tmp[0]=='load_file_path':
+                    out.filedir=tmp[-1]
+                if tmp[0]=='database_path':
+                    out.dbdir=tmp[-1]
+                if tmp[0]=='database_file':
+                    out.dbname=tmp[-1]
+                
+        return out
+
+
 #write to files
     def write_to_file(self,dirname,filename,write):
         with open(path.join(dirname,filename),'w') as f:
