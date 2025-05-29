@@ -35,10 +35,9 @@ ihtm_keywords=['load_file_path',
                  'ref_file_name',
                  'data_base_path',
                  'data_base_name',
-                 'ip_list',
-                 'port_list',
-                 'inst_name_list',
-                 'inst_no']
+                 'ip_address',
+                 'port',
+                 'inst_name']
 
 
 class Read_from():
