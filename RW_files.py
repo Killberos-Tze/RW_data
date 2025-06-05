@@ -43,7 +43,7 @@ ihtm_keywords=['load_file_path',
 class Read_from():
     def nk(filename):
         out={}
-        error=''
+        out['error']=''
         sep_found=False
         data_marker=False
         out['#data_table']=[]
@@ -64,7 +64,7 @@ class Read_from():
                     if not sep_found:
                         sep=Help.find_separator(tmp,3,sep_list)
                         if sep==None:
-                            error="Can't find proper split!"
+                            out['error']="Can't find proper split!"
                             break
                             
                         sep_found=True
@@ -78,15 +78,15 @@ class Read_from():
                     if data_marker:
                         out['#data_table'].append(tmp.split(sep))    
         except:
-            error='File cannot be read!'
+            out['error']='File cannot be read!'
         if out["#data_table"]:
             out["#data_table"]=array(out["#data_table"]).astype(float)
-        return out,error
+        return out
     
     def yml(filename,tab=' '):
         data_marker=False
         out={}
-        error=''
+        out['error']=''
         out['#data_table']=[]
         out['#data_summary']={
             'x1_name':'wavelength',
@@ -111,13 +111,13 @@ class Read_from():
             out["#data_table"]=array(out["#data_table"]).astype(float)
             out['#data_summary']['tot_row'],out['#data_summary']['tot_col']=shape(out["#data_table"])
         except:
-            error='File cannot be read!'
+            out['error']='File cannot be read!'
         
-        return out,error
+        return out
     
     def gwyddion_xyz(filename,sep=ihtm_sep):
         out={}
-        error=''
+        out['error']=''
         out['#data_table']=[]
         out['#data_summary']={'x1_name':'Position','y1_name':'Position'}
         out['#data_summary']['x1_col']=0
@@ -141,13 +141,13 @@ class Read_from():
             out["#data_table"]=array(out["#data_table"]).astype(float)
             out['#data_summary']['tot_row'],out['#data_summary']['tot_col']=shape(out["#data_table"])
         except:
-            error='File cannot be read!'
+            out['error']='File cannot be read!'
 
-        return out,error
+        return out
     
     def gwyddion_ascii_matrix(filename,sep=ihtm_sep):
         out={}
-        error=''
+        out['error']=''
         out['#data_table']=[]
         out['#data_summary']={'x1_name':'Position','y1_name':'Position'}
         out['#data_summary']['x1_col']='None'
@@ -176,15 +176,15 @@ class Read_from():
             out["#data_table"]=array(out["#data_table"]).astype(float)
             out['#data_summary']['tot_row'],out['#data_summary']['tot_col']=shape(out["#data_table"])
         except:
-            error='File cannot be read!'
+            out['error']='File cannot be read!'
         
 
-        return out,error
+        return out
     
     
     def dta(filename):
         out={}
-        error=''
+        out['error']=''
         out['#data_table']=[]
         out['#data_summary']={}
         out['#setup']={}
@@ -230,14 +230,14 @@ class Read_from():
             out['#data_summary']['y1_col']=1
             out['#data_summary']['tot_row'],out['#data_summary']['tot_col']=shape(out["#data_table"])
         except:
-            error='File cannot be read!'
+            out['error']='File cannot be read!'
             
-        return out,error        
+        return out        
     
     
     def tmm_proj(filename, split=ihtm_kword_sep, sep=ihtm_sep):
         out={}
-        error=""
+        out['error']=""
         try:
             with open(filename, 'r') as f:
                 for line in f:
@@ -248,18 +248,18 @@ class Read_from():
                     else:
                         out[a[0]]=a[-1]
         except:
-            error='File cannot be read!'
+            out['error']='File cannot be read!'
         out["Layer_thickness"]=[float(item) for item in out["Layer_thickness"]]
         out['Input_angle']=float(out['Input_angle'])
         out['Simulation_step']=float(out['Simulation_step'])
         
-        return out,error
+        return out
     
     
     def ini_inst(file, extension='ini', split=ihtm_kword_sep, kwords=ihtm_keywords, sep=ihtm_sep):
         file=file.replace("."+file.split(".")[-1],"."+extension)
         out={}
-        error=''
+        out['error']=''
         try:
             with open(file, 'r') as f:
                 for line in f:
@@ -274,8 +274,8 @@ class Read_from():
                     if "port_list" in out:
                         out['port_list']=[int(port) for port in out['port_list']]
         except:
-            error='File cannot be read!'
-        return out,error
+            out['error']='File cannot be read!'
+        return out
     
     def dsp(filename):
         out={}
@@ -287,7 +287,7 @@ class Read_from():
         out["#data_summary"]={}
         out["#data_summary"]['x1_name']='wavelength'
         out["#data_summary"]['x1_col']=0
-        error=''
+        out['error']=''
         try:
             with open(filename,'r') as f:
                 for line in f:
@@ -320,13 +320,13 @@ class Read_from():
                 out["#data_summary"]['y_name']='Absorbance'
             out['#data_summary']['tot_row'],out['#data_summary']['tot_col']=shape(out["#data_table"])
         except:
-            error='File cannot be read!'
+            out['error']='File cannot be read!'
         
-        return out,error
+        return out
     
     def ihtm(filename,split=ihtm_kword_sep,sep=ihtm_sep):
         out={}
-        error=''
+        out['error']=''
         try:
             with open(filename,'r') as f:
                 for line in f:
@@ -352,7 +352,7 @@ class Read_from():
                                 out[kword][a[0]]=a[1]
                         
         except:
-            error='File cannot be read!'
+            out['error']='File cannot be read!'
         if "#data_table" in out:
             out["#data_table"]=array(out["#data_table"]).astype(float)
         #this is for the old files
@@ -379,7 +379,7 @@ class Read_from():
                     poplist.append(kword)
         for kword in poplist:
             out.pop(kword)
-        return out,error
+        return out
     
 class Help():
     #mask example ['x1','y1','x2','y2'] or ['x1','y1_1','y1_2']
@@ -526,7 +526,7 @@ class Files_RW():
         data_marker=0
         out.data=[]
         out.data_units=''
-        out.error=''
+        out.out['error']=''
         try:
             with open(filename,'r') as f:
                 for line in f:
@@ -547,7 +547,7 @@ class Files_RW():
                         data_marker=1
                     counter+=1
         except:
-            out.error='File cannot be read!'
+            out.out['error']='File cannot be read!'
         #to be further improved
         out.wlength=linspace(setup[1],setup[2],int(setup[4]))
         out.wlength_units=setup[0]
@@ -593,7 +593,7 @@ class Files_RW():
             args=args
         else:
             args=['wavelength','Input media']
-        error=''
+        out['error']=''
         wlength_units=''
         data_units=''
 
@@ -607,19 +607,19 @@ class Files_RW():
 
     def load_reference_TMM(self,filename):
         out=self.container()
-        error=''
+        out['error']=''
         (comment,setup,header,data,error)=self.read_ihtm_file(filename,tab='\t')
         if not error:
             idx,out.wlength_units,out.data_units,erorr=self.process_TMM_header(header)
         if not error:
             out.wlength,out.data=self.process_2col_data(data,idx)
         out.type='Reflectance'
-        out.error=error
+        out.out['error']=error
         return out
 
 #my processed E60
     def process_dtsp_header(self, header):
-        error=''
+        out['error']=''
         wlength_units=''
         data_units=''
         idx=[0,1]
@@ -634,13 +634,13 @@ class Files_RW():
 
     def load_dtsp(self,filename):
         out=self.container()
-        error=''
+        out['error']=''
         (comment,setup,header,data,error)=self.read_ihtm_file(filename,tab='\t')
         if not error:
             idx,out.wlength_units,out.data_units,out.type,erorr=self.process_dtsp_header(header)
         if not error:
             out.wlength,out.data=self.process_2col_data(data,idx)
-        out.error=error
+        out.out['error']=error
         return out
 
 #measured IV files
@@ -693,9 +693,9 @@ class Files_RW():
         out.data=self.container()#measured data
         out.meas=self.container()#data about measurement
         out.cell=self.container()#data about the cell
-        out.error=''
+        out.out['error']=''
         (comment,setup,header,data,error)=self.read_ihtm_file(filename,tab='\t')
-        if error=='':
+        if out['error']=='':
             (idx,out.data.v_units,out.data.i_units)=self.process_iv_header(header,'current','voltage')
             v,i=self.process_iv_data(data,idx)
             out.data.v,out.data.i=v,-i
@@ -710,9 +710,9 @@ class Files_RW():
             #out.data.cd=i/out.cell.area#area should be read from your file fix it
             #out.data.cd_units=i_units+'/'+out.cell.area_units#current density
         else:
-            out.error=error
+            out.out['error']=error
         #if table_row!=len(out.data.v):
-        #    out.error='Data file is corrupter.'
+        #    out.out['error']='Data file is corrupter.'
         return out
     
 #for all of my files
@@ -721,7 +721,7 @@ class Files_RW():
         setup=[]
         header=[]
         data=[]
-        error='Wrong type of file!'
+        out['error']='Wrong type of file!'
         markers={item:0 for item in Files_RW.hashtags}
         try:
             with open(filename, 'r') as f:
@@ -750,9 +750,9 @@ class Files_RW():
                     elif markers[Files_RW.hashtags[2]]:
                         header.append(tmp.split(tab))
         except:
-            error='File cannot be read!'
+            out['error']='File cannot be read!'
         if header or comment or setup or data:
-            error=''
+            out['error']=''
             
         return comment, setup, header, array(data).astype(float), error
 
@@ -761,7 +761,7 @@ class Files_RW():
         out=self.container()
         out.setup=[]
         out.data=[]
-        out.error='Wrong type of file!'
+        out.out['error']='Wrong type of file!'
         try:
             with open(filename, 'r') as f:
                 for line in f:
@@ -771,14 +771,14 @@ class Files_RW():
                     else:
                         out.data.append(tmp.split('\t'))
         except:
-            out.error='File cannot be read!'
+            out.out['error']='File cannot be read!'
 
         if out.setup:
             out.x,out.x_units,out.y,out.y_units,out.z_name,out.z_units=self.process_ascii_matrix_setup(out.setup)
         if out.data:
             try:
                 out.data=array(out.data).astype(float)
-                out.error=''
+                out.out['error']=''
             except:
                 pass
         return out
@@ -801,9 +801,9 @@ class Files_RW():
         out.data=self.container()
         out.meas=self.container()
         out.cell=self.container()
-        out.error=''
+        out.out['error']=''
         (comment,header,data,error)=self.read_dta_file(filename)
-        if error=='':
+        if out['error']=='':
             (idx,out.data.v_units,out.data.i_units)=self.process_iv_header(header,'Im','Vf','Vu')
             v,i=self.process_iv_data(data,idx)
             out.data.v,out.data.i=-v,-i
@@ -815,16 +815,16 @@ class Files_RW():
             #out.data.cd=i/out.cell.area 
             #out.data.cd_units=i_units+'/'+out.cell.area_units#current density
         else:
-            out.error=error
+            out.out['error']=error
         if table_row!=len(out.data.v):
-            out.error='Data file is corrupter.'
+            out.out['error']='Data file is corrupter.'
         return out
     
     def read_dta_file(self,filename):
         comment=[]
         data=[]
         header=[]
-        error=''
+        out['error']=''
         comment_marker=1#comment text at beginning that is why this is set to negative
         header_marker=0#set to positive so it wait when table header starts
         table_marker=0#set to positive to wait when table starts
@@ -849,7 +849,7 @@ class Files_RW():
                         table_marker=1
         
         except:
-            error='File cannot be read.'
+            out['error']='File cannot be read.'
         return (comment,header,data,error)
 
     def process_dta_comment(self,comment):
