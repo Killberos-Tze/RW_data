@@ -35,6 +35,7 @@ ihtm_keywords=['load_file_path',
                  'ref_file_name',
                  'data_base_path',
                  'data_base_name',
+                 'data_files_path',
                  'ip_address',
                  'port',
                  'inst_name']
