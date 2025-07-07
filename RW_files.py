@@ -39,6 +39,49 @@ ihtm_keywords=['load_file_path',
 
 
 class Read_from():
+    def gwyddion_distribution(filename):
+        out={}
+        out['error']=''
+        out['#data_table']=[]
+        out['#data_summary']={'y1_name':'Distribution'}
+        out['#data_summary']['x1_col']=0
+        out['#data_summary']['y1_col']=1
+        try:
+            with open(filename, 'r') as f:
+                cnt=0
+                for line in f:
+                    tmp=line.strip()
+                    if cnt>2:
+                        out['#data_table'].append(tmp.split())
+                    elif cnt>1:
+                        tmp=tmp.split()
+                        if '<sup>' in tmp[1]:
+                            out['#data_summary']['y1_unit']=tmp[1][1:-1].replace('</sup>','}$')
+                            out['#data_summary']['y1_unit']=out['#data_summary']['y1_unit'].replace('<sup>','$^{')
+                        elif '<sub>' in tmp[1]:
+                            out['#data_summary']['y1_unit']=tmp[1][1:-1].replace('</sub>','}$')
+                            out['#data_summary']['y1_unit']=out['#data_summary']['y1_unit'].replace('<sub>','$_{')
+                        out['#data_summary']['x1_unit']=tmp[0][1:-1]
+                    elif cnt>0:
+                        tmp=tmp.split()
+                        out['#data_summary']['y1_name']=tmp[1]
+                    cnt+=1
+            out["#data_table"]=array(out["#data_table"]).astype(float)
+            out['#data_summary']['tot_row'],out['#data_summary']['tot_col']=shape(out["#data_table"])
+            
+            if out['#data_summary']['x1_unit']=='m':
+                out['#data_summary']['x1_name']='Height'
+            elif out['#data_summary']['x1_unit']=='deg':
+                out['#data_summary']['x1_name']='Phase'
+            elif out['#data_summary']['x1_unit']=='A':
+                out['#data_summary']['x1_name']='Magnitude'
+            elif out['#data_summary']['x1_unit']=='V':
+                out['#data_summary']['x1_name']='Voltage'
+            
+        except:
+            out['error']='File cannot be read!'
+        return out
+    
     def nk(filename):
         out={}
         out['error']=''
