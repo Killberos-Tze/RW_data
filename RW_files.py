@@ -125,7 +125,7 @@ class Read_from():
                 for line in f:
                     tmp=line.strip()
                     if tmp.startswith('#'):
-                        tmp=line.split(':')
+                        tmp=tmp.split(':')
                         if tmp[0]=="# Channel":
                             out['#data_summary']['z1_name']=tmp[1].split()[0].strip()
                             out['#data_summary']['z1_col']=2
@@ -155,7 +155,7 @@ class Read_from():
                 for line in f:
                     tmp=line.strip()
                     if tmp.startswith('#'):
-                        tmp=line.split(':')
+                        tmp=tmp.split(':')
                         if tmp[0]=="# Channel":
                             out['#data_summary']['z1_name']=tmp[1].split()[0].strip()
                             out['#data_summary']['z1_col']='#data_table'
@@ -436,7 +436,7 @@ class Write_to():
 
 
 
-
+#old stuff
 class Files_RW():
     hashtags=['#comment','#setup','#data_header','#data_table']
     split=':='
