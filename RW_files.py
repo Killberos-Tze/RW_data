@@ -56,12 +56,16 @@ class Read_from():
                     elif cnt>1:
                         tmp=tmp.split()
                         if '<sup>' in tmp[1]:
-                            out['#data_summary']['y1_unit']=tmp[1][1:-1].replace('</sup>','}$')
-                            out['#data_summary']['y1_unit']=out['#data_summary']['y1_unit'].replace('<sup>','$^{')
-                        elif '<sub>' in tmp[1]:
-                            out['#data_summary']['y1_unit']=tmp[1][1:-1].replace('</sub>','}$')
-                            out['#data_summary']['y1_unit']=out['#data_summary']['y1_unit'].replace('<sub>','$_{')
-                        out['#data_summary']['x1_unit']=tmp[0][1:-1]
+                            unittmp=tmp[1][1:-1].replace('</sup>','}$').replace('<sup>','$^{')
+                            out['#data_summary']['y1_power']=float(unittmp[unittmp.index('{')+1:unittmp.index('}')])
+                        #for some case where you have <sub>
+                        #if '<sub>' in tmp[1]:
+                        #    unittmp=tmp[1][1:-1].replace('</sub>','}$').replace('<sub>','$^{')
+                        out['#data_summary']['y1_unit']=unittmp[unittmp.index('$')-1:unittmp.index('$')]
+                        out['#data_summary']['y1_prefix']=unittmp[0:unittmp.index('$')-1]
+                        unittmp=tmp[0][1:-1]
+                        out['#data_summary']['x1_prefix']=unittmp[0:-1]
+                        out['#data_summary']['x1_unit']=unittmp[-1:]
                     elif cnt>0:
                         tmp=tmp.split()
                         out['#data_summary']['y1_name']=tmp[1]
@@ -173,10 +177,13 @@ class Read_from():
                             out['#data_summary']['z1_name']=tmp[1].split()[0].strip()
                             out['#data_summary']['z1_col']=2
                         elif tmp[0]=="# Lateral units":
-                            out['#data_summary']['x1_unit']=tmp[1].strip()
-                            out['#data_summary']['y1_unit']=tmp[1].strip()
+                            out['#data_summary']['x1_unit']=tmp[1].strip()[-1:]
+                            out['#data_summary']['x1_prefix']=tmp[1].strip()[0:-1]
+                            out['#data_summary']['y1_unit']=out['#data_summary']['x1_unit']
+                            out['#data_summary']['y1_prefix']=out['#data_summary']['x1_prefix']
                         elif tmp[0]=="# Value units":
-                            out['#data_summary']['z1_unit']=tmp[1].strip()
+                            out['#data_summary']['z1_unit']=tmp[1].strip()[-1:]
+                            out['#data_summary']['z1_prefix']=tmp[1].strip()[0:-1]
                     else:
                         out['#data_table'].append(tmp.split(sep))
             out["#data_table"]=array(out["#data_table"]).astype(float)
