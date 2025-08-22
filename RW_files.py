@@ -99,8 +99,10 @@ class Read_from():
             'x1_col':0,
             'y1_1_col':1,
             'y1_2_col':2,
-            'y1_1_unit':'None',
-            'y1_2_unit':'None',
+            'y1_1_unit':'',
+            'y1_2_unit':'',
+            'y1_1_prefix':'',
+            'y1_2_prefix':'',
             }
         try:
             with open(filename, 'r') as f:
@@ -114,7 +116,8 @@ class Read_from():
                             
                         sep_found=True
                         a=tmp.split(sep)
-                        out['#data_summary']['x1_unit']=a[0]
+                        out['#data_summary']['x1_unit']=a[0][-1:]
+                        out['#data_summary']['x1_prefix']=a[0][0:-1]
                         out['#data_summary']['y1_1_name']=a[1]
                         out['#data_summary']['y1_2_name']=a[2]
                         data_marker=True
@@ -140,9 +143,12 @@ class Read_from():
             'x1_col':0,
             'y1_1_col':1,
             'y1_2_col':2,
-            'x1_unit':'μm',
-            'y1_1_unit':'None',
-            'y1_2_unit':'None',
+            'x1_unit':'m',
+            'x1_prefix':'μ',
+            'y1_1_unit':'',
+            'y1_2_unit':'',
+            'y1_1_prefix':'',
+            'y1_2_prefix':'',
             }
         try:
             with open(filename, 'r') as f:
@@ -210,15 +216,18 @@ class Read_from():
                             out['#data_summary']['z1_name']=tmp[1].split()[0].strip()
                             out['#data_summary']['z1_col']='#data_table'
                         elif tmp[0]=="# Value units":
-                            out['#data_summary']['z1_unit']=tmp[1].strip()
+                            out['#data_summary']['z1_unit']=tmp[1].strip()[-1:]
+                            out['#data_summary']['z1_prefix']=tmp[1].strip()[0:-1]
                         elif tmp[0]=="# Width":
                             a=tmp[1].split()
                             out['#data_summary']['x1_value']=float(a[0].strip())
-                            out['#data_summary']['x1_unit']=a[1].strip()
+                            out['#data_summary']['x1_unit']=a[1].strip()[-1:]
+                            out['#data_summary']['x1_prefix']=a[1].strip()[0:-1]
                         elif tmp[0]=="# Height":
                             a=tmp[1].split()
                             out['#data_summary']['y1_value']=float(a[0].strip())
-                            out['#data_summary']['y1_unit']=a[1].strip()
+                            out['#data_summary']['y1_unit']=a[1].strip()[-1:]
+                            out['#data_summary']['y1_prefix']=a[1].strip()[0:-1]
                     else:
                         out['#data_table'].append(tmp.split(sep))
             out["#data_table"]=array(out["#data_table"]).astype(float)
@@ -276,6 +285,8 @@ class Read_from():
             out['#data_table']=out['#data_table'][:,out['#data_summary']['x1_col']:out['#data_summary']['y1_col']+1]     
             out['#data_summary']['x1_col']=0
             out['#data_summary']['y1_col']=1
+            out['#data_summary']['x1_prefix']=''
+            out['#data_summary']['y1_prefix']=''
             out['#data_summary']['tot_row'],out['#data_summary']['tot_col']=shape(out["#data_table"])
         except:
             out['error']='File cannot be read!'
@@ -345,11 +356,13 @@ class Read_from():
                         out["#data_summary"]['y1_name']=tmp
                         out["#data_summary"]['y1_col']=1
                         if tmp.startswith('%'):
-                            out["#data_summary"]['y1_unit']='%'
+                            out["#data_summary"]['y1_unit']=''
+                            out["#data_summary"]['y1_prefix']='c'
                     if info_marker:
                         x_data_tmp.append(float(tmp));
                     if tmp=='nm':#after units you get info about measurement setup
-                        out["#data_summary"]['x1_unit']=tmp
+                        out["#data_summary"]['x1_unit']=tmp[-1:]
+                        out["#data_summary"]['x1_prefix']=tmp[0:-1]
                         info_marker=1
                     if data_marker:
                         y_data_tmp.append(float(tmp))
@@ -407,14 +420,16 @@ class Read_from():
         if "#data_header" in out:
             out['#data_summary']={}
             out['#data_summary']['x1_name']=out['#data_header'][0][0]
-            out['#data_summary']['x1_unit']=out['#data_header'][1][0]
+            out['#data_summary']['x1_unit']=out['#data_header'][1][0][-1:]
+            out['#data_summary']['x1_prefix']=out['#data_header'][1][0][0:-1]
             out['#data_summary']['x1_col']=0
             while len(out['#data_header'][0])!=len(out['#data_header'][1]):
                 out['#data_header'][1].append('None')#if quantity was unitless previously
             
             for i in range(len(out['#data_header'][0])-1):
                 out['#data_summary'][f'y1_{i+1}_name']=out['#data_header'][0][i+1]
-                out['#data_summary'][f'y1_{i+1}_unit']=out['#data_header'][1][i+1]
+                out['#data_summary'][f'y1_{i+1}_unit']=out['#data_header'][1][i+1][-1:]
+                out['#data_summary'][f'y1_{i+1}_prefix']=out['#data_header'][1][i+1][0:-1]
                 out['#data_summary'][f'y1_{i+1}_col']=i+1
             out.pop("#data_header")
             out['#data_summary']['tot_row'],out['#data_summary']['tot_col']=shape(out["#data_table"])
