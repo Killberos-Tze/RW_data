@@ -343,7 +343,6 @@ class Read_from():
         x_data_tmp=[]
         y_data_tmp=[]
         data_marker=0
-        out['#sample']={}
         out["#data_summary"]={}
         out["#data_summary"]['x1_name']='wavelength'
         out["#data_summary"]['x1_col']=0
@@ -353,7 +352,7 @@ class Read_from():
                 for line in f:
                     tmp=line.strip()
                     if counter==4:#info about sample:
-                        out['#sample']['name']=tmp[0:-4]
+                        out['#data_summary']['y1_label']=tmp[0:-4]
                     if counter==10:#on  10 row you get info about measurement
                         info_marker=0
                         out["#data_summary"]['y1_name']=tmp
@@ -427,7 +426,7 @@ class Read_from():
             out['#data_summary']['x1_prefix']=out['#data_header'][1][0][0:-1]
             out['#data_summary']['x1_col']=0
             while len(out['#data_header'][0])!=len(out['#data_header'][1]):
-                out['#data_header'][1].append('None')#if quantity was unitless previously
+                out['#data_header'][1].append('')#if quantity was unitless previously
             
             for i in range(len(out['#data_header'][0])-1):
                 out['#data_summary'][f'y1_{i+1}_name']=out['#data_header'][0][i+1]
