@@ -378,9 +378,9 @@ class Read_from():
             if out["#data_summary"]['y1_name']=='%R':
                 out["#data_summary"]['y1_name']='Reflectance'
             elif out["#data_summary"]['y1_name']=='%T':
-                out["#data_summary"]['y_name']='Transmittance'
-            elif out["#data_summary"]['y_name']=='A':
-                out["#data_summary"]['y_name']='Absorbance'
+                out["#data_summary"]['y1_name']='Transmittance'
+            elif out["#data_summary"]['y1_name']=='A':
+                out["#data_summary"]['y1_name']='Absorbance'
             out['#data_summary']['tot_row'],out['#data_summary']['tot_col']=shape(out["#data_table"])
         except:
             out['error']='File cannot be read!'
