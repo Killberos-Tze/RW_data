@@ -435,7 +435,10 @@ class Read_from():
                 out['#data_summary'][f'y1_{i+1}_col']=i+1
             out.pop("#data_header")
             out['#data_summary']['tot_row'],out['#data_summary']['tot_col']=shape(out["#data_table"])
-        
+        #convert to integers
+        for key in out['#data_summary'].keys():
+            if ('col' in key) or ('row' in key) or ('point' in key):
+                out['#data_summary'][key]=int(out['#data_summary'][key])
         poplist=[]
         #clearing out empty keywords
         for kword in out:
@@ -469,6 +472,10 @@ class Write_to():
     #for writing ini or any other files related to the app (current extensions ini or inst)
     #input text should be a dictionary, file is __file__
     def ini_inst_proj(file,text_dict,extension="ini"):
+        flag=False
+        if 'error' in text_dict:
+            tmperror=text_dict.pop('error')
+            flag=True
         file=file.replace("."+file.split(".")[-1],"."+extension)
         with open(file,'w') as f:
             for keyword in text_dict:
@@ -477,9 +484,15 @@ class Write_to():
                     savetxt(f, [keyword+ihtm_kword_sep+ihtm_sep.join(tmp)], delimiter='\t', newline='\n', fmt='%s')
                 else:
                     savetxt(f, [keyword+ihtm_kword_sep+str(text_dict[keyword])], delimiter='\t', newline='\n', fmt='%s')
+        if flag:
+            text_dict['error']=tmperror
     
     #you pack everything into dictionary, normal filename
     def data(filename,text_dict,fmtlist=None):
+        flag=False
+        if 'error' in text_dict:
+            tmperror=text_dict.pop('error')
+            flag=True
         if fmtlist==None:
             fmtlist=[]
             for i in range(0,shape(text_dict['#data_table'])[1]):
@@ -498,11 +511,9 @@ class Write_to():
                             savetxt(f, [keywrd+ihtm_kword_sep+ihtm_sep.join(tmp)], delimiter='\t', newline='\n', fmt='%s')
                         else:
                             savetxt(f, [keywrd+ihtm_kword_sep+str(text_dict[keyword][keywrd])], delimiter='\t', newline='\n', fmt='%s')
+        if flag:
+            text_dict['error']=tmperror
                 
-
-
-
-
 #old stuff
 class Files_RW():
     hashtags=['#comment','#setup','#data_header','#data_table']
