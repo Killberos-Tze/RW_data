@@ -428,11 +428,18 @@ class Read_from():
             while len(out['#data_header'][0])!=len(out['#data_header'][1]):
                 out['#data_header'][1].append('')#if quantity was unitless previously
             
-            for i in range(len(out['#data_header'][0])-1):
-                out['#data_summary'][f'y1_{i+1}_name']=out['#data_header'][0][i+1]
-                out['#data_summary'][f'y1_{i+1}_unit']=out['#data_header'][1][i+1][-1:]
-                out['#data_summary'][f'y1_{i+1}_prefix']=out['#data_header'][1][i+1][0:-1]
-                out['#data_summary'][f'y1_{i+1}_col']=i+1
+            if len(out['#data_header'][0])>1:
+                for i in range(len(out['#data_header'][0])-1):
+                    out['#data_summary'][f'y1_{i+1}_name']=out['#data_header'][0][i+1]
+                    out['#data_summary'][f'y1_{i+1}_unit']=out['#data_header'][1][i+1][-1:]
+                    out['#data_summary'][f'y1_{i+1}_prefix']=out['#data_header'][1][i+1][0:-1]
+                    out['#data_summary'][f'y1_{i+1}_col']=i+1
+            elif len(out['#data_header'][0])==1:
+                i=0
+                out['#data_summary']['y1_name']=out['#data_header'][0][i+1]
+                out['#data_summary']['y1_unit']=out['#data_header'][1][i+1][-1:]
+                out['#data_summary']['y1_prefix']=out['#data_header'][1][i+1][0:-1]
+                out['#data_summary']['y1_col']=i+1
             out.pop("#data_header")
             out['#data_summary']['tot_row'],out['#data_summary']['tot_col']=shape(out["#data_table"])
         #convert to integers
