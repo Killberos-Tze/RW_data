@@ -25,7 +25,7 @@ sep_list=['\t',' ',',',':','\\']
 ihtm_sections=['#comment',#never used in old ones here we put info about user and something about measurement
               '#setup',#never used in old ones here we should write about device, time, date, values
               '#sample',#for new files, here we should put into about sample name, area, number of cells, material,configuratrion
-              '#data_header',#to remain compatible with old files 
+              '#data_header',#to remain compatible with old files
               '#data_summary',#for new files
               '#data_table']
 
@@ -72,7 +72,6 @@ class Read_from():
                     cnt+=1
             out["#data_table"]=array(out["#data_table"]).astype(float)
             out['#data_summary']['tot_row'],out['#data_summary']['tot_col']=shape(out["#data_table"])
-            
             if out['#data_summary']['x1_unit']=='m':
                 out['#data_summary']['x1_name']='Height'
             elif out['#data_summary']['x1_unit']=='deg':
@@ -81,11 +80,10 @@ class Read_from():
                 out['#data_summary']['x1_name']='Magnitude'
             elif out['#data_summary']['x1_unit']=='V':
                 out['#data_summary']['x1_name']='Voltage'
-            
         except:
             out['error']='File cannot be read!'
         return out
-    
+
     def nk(filename):
         out={}
         out['error']=''
@@ -113,7 +111,6 @@ class Read_from():
                         if sep==None:
                             out['error']="Can't find proper split!"
                             break
-                            
                         sep_found=True
                         a=tmp.split(sep)
                         out['#data_summary']['x1_unit']=a[0][-1:]
@@ -122,15 +119,14 @@ class Read_from():
                         out['#data_summary']['y1_2_name']=a[2]
                         data_marker=True
                         continue
-                    
                     if data_marker:
-                        out['#data_table'].append(tmp.split(sep))    
+                        out['#data_table'].append(tmp.split(sep))
         except:
             out['error']='File cannot be read!'
         if out["#data_table"]:
             out["#data_table"]=array(out["#data_table"]).astype(float)
         return out
-    
+
     def yml(filename,tab=' '):
         data_marker=False
         out={}
@@ -163,9 +159,9 @@ class Read_from():
             out['#data_summary']['tot_row'],out['#data_summary']['tot_col']=shape(out["#data_table"])
         except:
             out['error']='File cannot be read!'
-        
+
         return out
-    
+
     def gwyddion_xyz(filename,sep=ihtm_sep):
         out={}
         out['error']=''
@@ -198,7 +194,7 @@ class Read_from():
             out['error']='File cannot be read!'
 
         return out
-    
+
     def gwyddion_ascii_matrix(filename,sep=ihtm_sep):
         out={}
         out['error']=''
@@ -234,11 +230,8 @@ class Read_from():
             out['#data_summary']['tot_row'],out['#data_summary']['tot_col']=shape(out["#data_table"])
         except:
             out['error']='File cannot be read!'
-        
-
         return out
-    
-    
+
     def dta(filename):
         out={}
         out['error']=''
@@ -268,7 +261,6 @@ class Read_from():
                             out['#setup']['Device_area']=tmp[2]
                             out['#setup']['Device_area_unit']=tmp[5]
                         if tmp[0]=="Pt":
-                            
                             out['#data_summary']['x1_name']=tmp[2]
                             out['#data_summary']['x1_col']=2
                             out['#data_summary']['y1_name']=tmp[3]
@@ -280,9 +272,8 @@ class Read_from():
                             continue
                         if table_marker:
                             out['#data_table'].append(tmp)
-           
             out['#data_table']=array(out["#data_table"])
-            out['#data_table']=out['#data_table'][:,out['#data_summary']['x1_col']:out['#data_summary']['y1_col']+1]     
+            out['#data_table']=out['#data_table'][:,out['#data_summary']['x1_col']:out['#data_summary']['y1_col']+1]
             out['#data_summary']['x1_col']=0
             out['#data_summary']['y1_col']=1
             out['#data_summary']['x1_prefix']=''
@@ -290,10 +281,8 @@ class Read_from():
             out['#data_summary']['tot_row'],out['#data_summary']['tot_col']=shape(out["#data_table"])
         except:
             out['error']='File cannot be read!'
-            
-        return out        
-    
-    
+        return out
+
     def tmm_proj(filename, split=ihtm_kword_sep, sep=ihtm_sep):
         out={}
         out['error']=""
@@ -311,10 +300,8 @@ class Read_from():
         out["Layer_thickness"]=[float(item) for item in out["Layer_thickness"]]
         out['Input_angle']=float(out['Input_angle'])
         out['Simulation_step']=float(out['Simulation_step'])
-        
         return out
-    
-    
+
     def ini_inst(file, extension='ini', split=ihtm_kword_sep, kwords=ihtm_keywords, sep=ihtm_sep):
         file=file.replace("."+file.split(".")[-1],"."+extension)
         out={}
@@ -335,7 +322,7 @@ class Read_from():
         except:
             out['error']='File cannot be read!'
         return out
-    
+
     def dsp(filename):
         out={}
         counter=1
@@ -371,7 +358,6 @@ class Read_from():
                     if tmp=='#DATA':
                         data_marker=1
                     counter+=1
-            
             x_data=linspace(x_data_tmp[0],x_data_tmp[1],int(x_data_tmp[3]))
             y_data=array(y_data_tmp)
             out['#data_table']=swapaxes(array([x_data,y_data]),0,1)#find transpose
@@ -384,9 +370,8 @@ class Read_from():
             out['#data_summary']['tot_row'],out['#data_summary']['tot_col']=shape(out["#data_table"])
         except:
             out['error']='File cannot be read!'
-        
         return out
-    
+
     def ihtm(filename,split=ihtm_kword_sep,sep=ihtm_sep):
         out={}
         out['error']=''
@@ -413,7 +398,6 @@ class Read_from():
                                 out[kword][a[0]]=a[1].split(sep)
                             else:
                                 out[kword][a[0]]=a[1]
-                        
         except:
             out['error']='File cannot be read!'
         if "#data_table" in out:
@@ -459,27 +443,27 @@ class Read_from():
         for kword in poplist:
             out.pop(kword)
         return out
-    
+
 class Help():
     #mask example ['x1','y1','x2','y2'] or ['x1','y1_1','y1_2']
-    def generate_data_dict(mask,quantities,units):
+    def generate_data_dict(mask,quantities,prefixes,units,labels):
         out={}
         out['Label_list']=mask
-        for item in enumerate(mask):
-            out[f'{item[1]}_name']=quantities[item[0]]
-            out[f'{item[1]}_unit']=units[item[0]]
-            out[f'{item[1]}_col']=item[0]
+        for idx,item in enumerate(mask):
+            out[f'{item}_name']=quantities[idx]
+            out[f'{item}_unit']=units[idx]
+            out[f'{item}_col']=idx
+        out[f'{item}_prefix']=prefixes[idx]
+        out[f'{item}_label']=labels[idx]
         return out
-    
+
     def find_separator(string_to_be_separated,exprected_col_no,sep_list):
         for item in sep_list:
             if exprected_col_no==len(string_to_be_separated.split(item)):
                 return item
         return None
-                
 
 class Write_to():
-    
     #for writing ini or any other files related to the app (current extensions ini or inst)
     #input text should be a dictionary, file is __file__
     def ini_inst_proj(file,text_dict,extension="ini"):
@@ -497,7 +481,7 @@ class Write_to():
                     savetxt(f, [keyword+ihtm_kword_sep+str(text_dict[keyword])], delimiter='\t', newline='\n', fmt='%s')
         if flag:
             text_dict['error']=tmperror
-    
+
     #you pack everything into dictionary, normal filename
     def data(filename,text_dict,fmtlist=None):
         flag=False
@@ -508,11 +492,10 @@ class Write_to():
             fmtlist=[]
             for i in range(0,shape(text_dict['#data_table'])[1]):
                 fmtlist.append('%.6e')
-        
         with open(filename,'w') as f:
             for keyword in text_dict:
                 savetxt(f, [keyword], delimiter='\t', newline='\n', fmt='%s')
-                if keyword=="#data_table":    
+                if keyword=="#data_table":
                     for line in text_dict[keyword]:
                         savetxt(f, [line], delimiter='\t', newline='\n', fmt=fmtlist)
                 else:
@@ -524,15 +507,13 @@ class Write_to():
                             savetxt(f, [keywrd+ihtm_kword_sep+str(text_dict[keyword][keywrd])], delimiter='\t', newline='\n', fmt='%s')
         if flag:
             text_dict['error']=tmperror
-                
+
 #old stuff
 class Files_RW():
     hashtags=['#comment','#setup','#data_header','#data_table']
     split=':='
-              
     class container():
         pass
-    
 
 #ini stuff
     def check_E60_ini(self,dirname,filename,split):
@@ -573,7 +554,7 @@ class Files_RW():
                 if tmp[0]=="port":
                     port_list.append(int(tmp[-1]))
         return ip_list,port_list
-    
+
     def check_IV_analysis_ini(self,dirname,filename,split):
         out=self.container()
         with open(path.join(dirname,filename), 'r') as f:
@@ -586,7 +567,6 @@ class Files_RW():
                     out.dbdir=tmp[-1]
                 if tmp[0]=='database_file':
                     out.dbname=tmp[-1]
-                
         return out
 
 
@@ -651,14 +631,14 @@ class Files_RW():
         col1=data[:,idx[0]]
         col2=data[:,idx[1]]
         return col1,col2
-    
+
     def reset_markers(self,markers,mykey):
         for key in markers.keys():
             if key==mykey:
                 markers[key]=1;
             else:
                 markers[key]=0
-                
+
     #this function is obsolete
     def insert_symbol(self,string_list,symbol):
         #new_string=''
@@ -667,7 +647,7 @@ class Files_RW():
         #new_string=new_string[0:-1]
         new_string=symbol.join(string_list)
         return new_string
-    
+
     #to have it here although not used
     def Add_items(self,text,itemlist,sep):
         for item in itemlist:
@@ -754,19 +734,17 @@ class Files_RW():
             elif tmp[0]=='area_units':
                 area_units=tmp[-1]
         return (measurement_date,measurement_time,sample_name,device_area,area_units)
-                
-                            
+
     def process_iv_header(self,header,i,*v):
         idx=self.container()
         idx.i_col=header[0].index(i)
         idx.v_col=[]
         for item in v:
             idx.v_col.append(header[0].index(item))
-        
         v_units=header[1][idx.v_col[-1]]
         i_units=header[1][idx.i_col]
         return (idx, v_units, i_units)
-    
+
     def process_iv_data(self,table,idx):
         data=array(table)
         v=data[:,idx.v_col[0]].astype(float)
@@ -774,7 +752,7 @@ class Files_RW():
             v+=data[:,idx.v_col[i]].astype(float)
         i=data[:,idx.i_col].astype(float)
         return (v,i)
-               
+
     def load_iv_file(self,filename):
         out=self.container()
         out.data=self.container()#measured data
@@ -793,7 +771,7 @@ class Files_RW():
                 out.cell.area_units = 'cm^2'
             #(out.cell.area,out.cell.area_units)=Analyze_IV().convert_area_units(area,area_units)
             #this is only temporary fix
-            #(i,i_units)=Analyze_IV().convert_current_mA(out.data.i,out.data.i_units)  
+            #(i,i_units)=Analyze_IV().convert_current_mA(out.data.i,out.data.i_units)
             #out.data.cd=i/out.cell.area#area should be read from your file fix it
             #out.data.cd_units=i_units+'/'+out.cell.area_units#current density
         else:
@@ -801,7 +779,6 @@ class Files_RW():
         #if table_row!=len(out.data.v):
         #    out.error='Data file is corrupter.'
         return out
-    
 #for all of my files
     def read_ihtm_file(self,filename,tab=None):#this should be the same for all files you are creating either in measurements of after processing except for AFM files
         comment=[]
@@ -840,10 +817,9 @@ class Files_RW():
             error='File cannot be read!'
         if header or comment or setup or data:
             error=''
-            
         return comment, setup, header, array(data).astype(float), error
 
-    #setup should be header 
+    #setup should be header
     def load_ascii_matrix(self,filename):
         out=self.container()
         out.setup=[]
@@ -882,7 +858,7 @@ class Files_RW():
             elif tmp[0]=='# Value units':
                 z_units=tmp[-1].strip()
         return float(x),x_units,float(y),y_units,z_name,z_units
-#dta file from prof. Dragisa    
+#dta file from prof. Dragisa
     def load_dta_file(self,filename):
         out=self.container()
         out.data=self.container()
@@ -898,15 +874,15 @@ class Files_RW():
             #area is always in cm^2
             #(out.cell.area,out.cell.area_units)=Analyze_IV().convert_area_units(area,area_units)
             #current density should be in mA/cm^2
-            #(i,i_units)=Analyze_IV().convert_current_mA(out.data.i,out.data.i_units)       
-            #out.data.cd=i/out.cell.area 
+            #(i,i_units)=Analyze_IV().convert_current_mA(out.data.i,out.data.i_units)
+            #out.data.cd=i/out.cell.area
             #out.data.cd_units=i_units+'/'+out.cell.area_units#current density
         else:
             out.error=error
         if table_row!=len(out.data.v):
             out.error='Data file is corrupter.'
         return out
-    
+
     def read_dta_file(self,filename):
         comment=[]
         data=[]
@@ -934,7 +910,6 @@ class Files_RW():
                     if tmp[0]=='#':
                         header_marker=0
                         table_marker=1
-        
         except:
             error='File cannot be read.'
         return (comment,header,data,error)
@@ -947,12 +922,9 @@ class Files_RW():
                 measurement_date=self.insert_symbol([american_date[2],american_date[0],american_date[1]],'')
             if tmp[0]=='TIME':
                 measurement_time=tmp[2]
-                
             if tmp[0]=='AREA':
                 device_area=float(tmp[2])
                 area_units=tmp[3].split()[-1][1:-1]
             if tmp[0]=='CURVE':
                 table_row=int(tmp[2])
         return (measurement_date,measurement_time,device_area,area_units,table_row)
-
-    
