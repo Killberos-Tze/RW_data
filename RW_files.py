@@ -35,7 +35,7 @@ ihtm_keywords=['load_file_path',
                  'ref_file_name']
 instr_keywords=['ip_address',
                  'port',
-                 'device_name']#device name triggers new keyword
+                 'device_name']
 
 
 class Read_from():
@@ -316,11 +316,14 @@ class Read_from():
                             if tmp[0] == kword:
                                 out[kword]=tmp[-1]
                     elif extension=='instr':
-                        tmp=line.split(split)
-                        if tmp[0]=='device_name':
-                            kword=tmp[-1]
+                        if line.startswith('no_'):
+                            tmp=line.split(split)
+                            out[tmp[0]]=int(tmp[-1])
+                        elif '#device' in line:
+                            kword=line
                             out[kword]={}
                         else:
+                            tmp=line.split(split)
                             if tmp[0]=='port':
                                 tmp[-1]=int(tmp[-1])
                             out[kword][tmp[0]]=tmp[-1]
