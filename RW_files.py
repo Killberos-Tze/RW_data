@@ -309,23 +309,24 @@ class Read_from():
         try:
             with open(file, 'r') as f:
                 for line in f:
-                    a=line.strip()
+                    line=line.strip()
                     if extension=='ini':
-                        tmp=a.split(split)
+                        tmp=line.split(split)
                         for kword in kwords:
                             if tmp[0] == kword:
                                 out[kword]=tmp[-1]
                     elif extension=='instr':
-                        if a.startswith('no_'):
-                            tmp=a.split(split)
+                        if line.startswith('no_'):
+                            tmp=line.split(split)
                             out[tmp[0]]=int(tmp[-1])
-                        elif '#device' in a:
-                            out[a]={}
+                        elif '#device' in line:
+                            kword=line
+                            out[kword]={}
                         else:
-                            tmp=a.split(split)
+                            tmp=line.split(split)
                             if tmp[0]=='port':
                                 tmp[-1]=int(tmp[-1])
-                            out[a][tmp[0]]=tmp[-1]
+                            out[kword][tmp[0]]=tmp[-1]
         except:
             out['error']='File cannot be read!'
         return out
