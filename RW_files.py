@@ -32,10 +32,10 @@ ihtm_sections=['#comment',#never used in old ones here we put info about user an
 ihtm_keywords=['load_file_path',
                  'save_file_path',
                  'ref_file_path',
-                 'ref_file_name',
-                 'ip_address',
+                 'ref_file_name']
+instr_keywords=['ip_address',
                  'port',
-                 'inst_name']
+                 'device_name']
 
 
 class Read_from():
@@ -310,15 +310,22 @@ class Read_from():
             with open(file, 'r') as f:
                 for line in f:
                     a=line.strip()
-                    tmp=a.split(split)
-                    for kword in kwords:
-                        if tmp[0] == kword:
-                            if "_list" in kword:
-                                out[kword]=tmp[-1].split(sep)
-                            else:
+                    if extension=='ini':
+                        tmp=a.split(split)
+                        for kword in kwords:
+                            if tmp[0] == kword:
                                 out[kword]=tmp[-1]
-                    if "port_list" in out:
-                        out['port_list']=[int(port) for port in out['port_list']]
+                    elif extension=='instr':
+                        if a.startswith('no_'):
+                            tmp=a.split(split)
+                            out[tmp[0]]=int(tmp[-1])
+                        elif '#device' in a:
+                            out[a]={}
+                        else:
+                            tmp=a.split(split)
+                            if tmp[0]=='port':
+                                tmp[-1]=int(tmp[-1])
+                            out[a][tmp[0]]=tmp[-1]
         except:
             out['error']='File cannot be read!'
         return out
@@ -427,7 +434,7 @@ class Read_from():
                     out['#data_summary']['y1_unit']=''
                     out['#data_summary']['y1_prefix']='c'
                 out['#data_summary']['y1_col']=i+1
-                out['#data_summary'][f'y1_label']=path.basename(filename)[0:-5]
+                out['#data_summary']['y1_label']=path.basename(filename)[0:-5]
             out.pop("#data_header")
             out['#data_summary']['tot_row'],out['#data_summary']['tot_col']=shape(out["#data_table"])
         #convert to integers
@@ -448,7 +455,7 @@ class Help():
     #mask example ['x1','y1','x2','y2'] or ['x1','y1_1','y1_2']
     def generate_data_dict(mask,quantities,prefixes,units,labels):
         out={}
-        out['Label_list']=mask
+        out['symbol_list']=mask
         for idx,item in enumerate(mask):
             out[f'{item}_name']=quantities[idx]
             out[f'{item}_unit']=units[idx]
