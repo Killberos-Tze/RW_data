@@ -5,7 +5,7 @@ Created on Wed May 18 16:19:18 2022
 
 @author: tzework
 """
-from numpy import array, linspace, append, savetxt, shape, swapaxes
+from numpy import array, linspace, savetxt, shape, swapaxes
 from os import path
 
 #for loading a file you need first read function that reads it
