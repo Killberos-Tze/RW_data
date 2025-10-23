@@ -302,7 +302,7 @@ class Read_from():
         out['Simulation_step']=float(out['Simulation_step'])
         return out
 
-    def ini_inst(file, extension='ini', split=ihtm_kword_sep, kwords=ihtm_keywords, sep=ihtm_sep):
+    def ini(file, extension='ini', split=ihtm_kword_sep, kwords=ihtm_keywords):
         file=file.replace("."+file.split(".")[-1],"."+extension)
         out={}
         out['error']=''
@@ -310,23 +310,33 @@ class Read_from():
             with open(file, 'r') as f:
                 for line in f:
                     line=line.strip()
-                    if extension=='ini':
+                    tmp=line.split(split)
+                    for kword in kwords:
+                        if tmp[0] == kword:
+                            out[kword]=tmp[-1]
+        except:
+            out['error']='File cannot be read!'
+        return out
+
+    def inst(file, extension='inst', split=ihtm_kword_sep, kwords=instr_keywords):
+        file=file.replace("."+file.split(".")[-1],"."+extension)
+        out={}
+        out['error']=''
+        try:
+            with open(file, 'r') as f:
+                for line in f:
+                    line=line.strip()
+                    if line.startswith('no_'):
                         tmp=line.split(split)
-                        for kword in kwords:
-                            if tmp[0] == kword:
-                                out[kword]=tmp[-1]
-                    elif extension=='instr':
-                        if line.startswith('no_'):
-                            tmp=line.split(split)
-                            out[tmp[0]]=int(tmp[-1])
-                        elif '#device' in line:
-                            kword=line
-                            out[kword]={}
-                        else:
-                            tmp=line.split(split)
-                            if tmp[0]=='port':
-                                tmp[-1]=int(tmp[-1])
-                            out[kword][tmp[0]]=tmp[-1]
+                        out[tmp[0]]=int(tmp[-1])
+                    elif '#device' in line:
+                        kword=line
+                        out[kword]={}
+                    else:
+                        tmp=line.split(split)
+                        if tmp[0]=='port':
+                            tmp[-1]=int(tmp[-1])
+                        out[kword][tmp[0]]=tmp[-1]
         except:
             out['error']='File cannot be read!'
         return out
