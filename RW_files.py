@@ -492,7 +492,11 @@ class Write_to():
         file=file.replace("."+file.split(".")[-1],"."+extension)
         with open(file,'w') as f:
             for keyword in text_dict:
-                if ("Layer_" in keyword) or ("_list" in keyword):
+                if keyword.startswith('#'):
+                    savetxt(f, [keyword], delimiter='\t', newline='\n', fmt='%s')
+                    for kword in text_dict[keyword]:
+                        savetxt(f, [kword+ihtm_kword_sep+str(text_dict[keyword][kword])], delimiter='\t', newline='\n', fmt='%s')
+                elif ("Layer_" in keyword) or ("_list" in keyword):
                     tmp=[str(item) for item in text_dict[keyword]]
                     savetxt(f, [keyword+ihtm_kword_sep+ihtm_sep.join(tmp)], delimiter='\t', newline='\n', fmt='%s')
                 else:
