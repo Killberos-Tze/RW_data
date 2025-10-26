@@ -464,15 +464,17 @@ class Read_from():
 
 class Help():
     #mask example ['x1','y1','x2','y2'] or ['x1','y1_1','y1_2']
-    def generate_data_dict(mask,quantities,prefixes,units,labels):
+    def generate_data_dict(mask,quantities,units,prefixes=[],labels=None):
         out={}
         out['symbol_list']=mask
         for idx,item in enumerate(mask):
             out[f'{item}_name']=quantities[idx]
             out[f'{item}_unit']=units[idx]
             out[f'{item}_col']=idx
-        out[f'{item}_prefix']=prefixes[idx]
-        out[f'{item}_label']=labels[idx]
+            if prefixes==[]:
+                out[f'{item}_prefix']=''
+            if labels!=None:
+                out[f'{item}_label']=labels[idx]
         return out
 
     def find_separator(string_to_be_separated,exprected_col_no,sep_list):
