@@ -390,7 +390,7 @@ class Read_from():
             out['error']='File cannot be read!'
         return out
 
-    def ihtm(filename,split=ihtm_kword_sep,sep=ihtm_sep):
+    def ihtm(filename,filetype=None,split=ihtm_kword_sep,sep=ihtm_sep):
         out={}
         out['error']=''
         try:
