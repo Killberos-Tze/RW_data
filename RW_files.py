@@ -19,6 +19,7 @@ from os import path
 ihtm_kword_sep=":="
 ihtm_sep='\t'
 coma_sep=','
+column_sep=';'
 sep_list=['\t',' ',',',':','\\']
 
 
@@ -39,11 +40,46 @@ instr_keywords=['ip_address',
 
 
 class Read_from():
+    def uninova(filename):
+        out={}
+        out['error']=''
+        out['#data_table']=[]
+        out['#data_summary']={}
+        out['#data_summary']['x1_col']=0
+        out['#data_summary']['y1_col']=1
+        out['#data_summary']['x1_name']='wavelength'
+        out['#data_summary']['y1_label']=path.basename(filename).split('.csv')[0]
+        out['#data_summary']['y1_unit']=''
+        try:
+            with open(filename, 'r') as f:
+                flag=False #only first line is some info
+                for line in f:
+                    tmp=line.strip()
+                    if flag:
+                        out['#data_table'].append(tmp.replace(',','.').split(column_sep))
+                    else:
+                        xunit,quantity=tmp.split(column_sep)
+                        print(xunit,quantity)
+                        out['#data_summary']['x1_unit']=xunit[-1]
+                        out['#data_summary']['x1_prefix']=xunit[0]
+                        if quantity=='%R':
+                            out['#data_summary']['y1_prefix']='c'
+                            out['#data_summary']['y1_name']='Reflectance'
+                        elif quantity=='%T':
+                            out['#data_summary']['y1_prefix']='c'
+                            out['#data_summary']['y1_name']='Transmittance'
+                    flag=True #after first line it is finished
+            out["#data_table"]=array(out["#data_table"]).astype(float)
+        except:
+            out['error']='File cannot be read!'
+        return out
+
     def gwyddion_distribution(filename):
         out={}
         out['error']=''
         out['#data_table']=[]
-        out['#data_summary']={'y1_name':'Distribution'}
+        out['#data_summary']={}
+        out['#data_summary']['y1_name']='Distribution'
         out['#data_summary']['x1_col']=0
         out['#data_summary']['y1_col']=1
         try:
