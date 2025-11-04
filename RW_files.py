@@ -60,7 +60,7 @@ class Read_from():
                         out['#data_table'].append(tmp.replace(',','.').split(column_sep))
                     else:
                         xunit,quantity=tmp.split(column_sep)
-                        print(xunit,quantity)
+                        quantity=quantity.strip()
                         out['#data_summary']['x1_unit']=xunit[-1]
                         out['#data_summary']['x1_prefix']=xunit[0]
                         if quantity=='%R':
