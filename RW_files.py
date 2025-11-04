@@ -71,7 +71,7 @@ class Read_from():
                             out['#data_summary']['y1_name']='Transmittance'
                     flag=True #after first line it is finished
             out["#data_table"]=array(out["#data_table"]).astype(float)
-            out["#data_table"]=sort(out["#data_table"],axis=0)
+            out["#data_table"]=out["#data_table"][out["#data_table"][:, 0].argsort()]
             out['#data_summary']['tot_row'],out['#data_summary']['tot_col']=shape(out["#data_table"])
         except:
             out['error']='File cannot be read!'
