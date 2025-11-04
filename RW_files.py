@@ -45,6 +45,7 @@ class Read_from():
         out['error']=''
         out['#data_table']=[]
         out['#data_summary']={}
+        out['#data_summary']['symbol_list']=['x1','y1']
         out['#data_summary']['x1_col']=0
         out['#data_summary']['y1_col']=1
         out['#data_summary']['x1_name']='wavelength'
@@ -70,6 +71,8 @@ class Read_from():
                             out['#data_summary']['y1_name']='Transmittance'
                     flag=True #after first line it is finished
             out["#data_table"]=array(out["#data_table"]).astype(float)
+            out['#data_summary']['tot_row'],out['#data_summary']['tot_col']=shape(out["#data_table"])
+            
         except:
             out['error']='File cannot be read!'
         return out
@@ -79,6 +82,7 @@ class Read_from():
         out['error']=''
         out['#data_table']=[]
         out['#data_summary']={}
+        #out['#data_summary']['symbol_list']=['x1','y1']
         out['#data_summary']['y1_name']='Distribution'
         out['#data_summary']['x1_col']=0
         out['#data_summary']['y1_col']=1
