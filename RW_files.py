@@ -523,7 +523,7 @@ class Help():
                 return item
         return None
 #data is type [[],[]]
-    def adjust_string_length(self, data):
+    def adjust_string_length(data):
         new_data=[[str(ele) for ele in row] for row in data]
         cmax=[[len(ele) for ele in row] for row in new_data]
         cmax=[max(ele) for ele in zip(*cmax)]
