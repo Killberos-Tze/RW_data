@@ -522,7 +522,16 @@ class Help():
             if exprected_col_no==len(string_to_be_separated.split(item)):
                 return item
         return None
-
+#data is type [[],[]]
+    def adjust_string_length(self, data):
+        new_data=[[str(ele) for ele in row] for row in data]
+        cmax=[[len(ele) for ele in row] for row in new_data]
+        cmax=[max(ele) for ele in zip(*cmax)]
+        for rows in new_data:
+            for idx in range(0,len(rows)):
+                rows[idx]=rows[idx].ljust(cmax[idx])
+        return new_data
+    
 class Write_to():
     #for writing ini or any other files related to the app (current extensions ini or inst)
     #input text should be a dictionary, file is __file__
