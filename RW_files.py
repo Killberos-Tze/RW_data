@@ -193,6 +193,9 @@ class Read_from():
                     if tmp.startswith('data:'):
                         data_marker=True
                         continue
+                    if tmp.startswith('CONDITIONS:'):
+                        data_marker=False
+                        continue
                     if data_marker:
                         out['#data_table'].append(tmp.split(tab)) 
             out["#data_table"]=array(out["#data_table"]).astype(float)
